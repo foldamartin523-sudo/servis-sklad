@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sklad Servis</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; font-size: 14px; background: #f4f6f8; color: #222; }
+header { background: #1F4E79; color: white; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+header h1 { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
+.controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+#search { padding: 8px 14px; border: none; border-radius: 6px; font-size: 14px; width: 280px; outline: none; }
+.filter-btn { padding: 7px 14px; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 6px; background: transparent; color: white; font-size: 13px; cursor: pointer; }
+.filter-btn.active { background: white; color: #1F4E79; font-weight: bold; border-color: white; }
+.stats { padding: 8px 24px; background: #e8f0f7; font-size: 13px; color: #555; border-bottom: 1px solid #cdd8e3; }
+.table-wrap { padding: 16px 24px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+thead th { background: #1F4E79; color: white; padding: 10px 14px; text-align: left; font-size: 13px; cursor: pointer; user-select: none; white-space: nowrap; }
+thead th:hover { background: #174070; }
+tbody tr { border-bottom: 1px solid #eee; }
+tbody tr:hover { background: #f0f6ff; }
+td { padding: 8px 14px; }
+td:nth-child(1) { color: #888; font-size: 12px; font-family: monospace; }
+mark { background: #ffe87c; border-radius: 2px; padding: 0 1px; }
+@media (max-width: 600px) {
+  #search { width: 100%; }
+  .table-wrap { padding: 8px; }
+  header { padding: 12px 16px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>SKLAD SERVIS</h1>
+  <div class="controls">
+    <input type="text" id="search" placeholder="Hledat název nebo kartu..." autocomplete="off" />
+    <button class="filter-btn active" data-filter="all">Vše</button>
+  </div>
+</header>
+<div class="stats" id="stats"></div>
+<div class="table-wrap">
+<table id="tbl">
+  <thead>
+    <tr>
+      <th data-col="k" style="width:100px">Karta ↕</th>
+      <th data-col="n">Název ↕</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+</div>
+
+<script>
+var data = [
+{k:'S245',n:'15x čip+čtečka',m:1,mj:'ks'},{k:'S1',n:'A23',m:1,mj:'ks'},{k:'S2',n:'ALPHA BUS sada vidlička, domeček 20031-A',m:0,mj:'ks'},{k:'S3',n:'ALPHA BUS samostatný plastový váleček na čep',m:4,mj:'ks'},{k:'S4 - B',n:'ALPHA BUS trojúhelník komplet sada B',m:0,mj:'ks'},{k:'S4',n:'ALPHA BUS trojúhelník komplet sada BB',m:3,mj:'ks'},{k:'S4 - BH',n:'ALPHA BUS trojúhelník komplet sada BH',m:0,mj:'ks'},{k:'S5',n:'Autol 2000 sprej',m:0,mj:'ks'},{k:'S6',n:'AXSP3PO2012N 230V AC/13,8',m:0,mj:'ks'},{k:'S7',n:'Baterie (akumulátor) 12V 1,3 AH (baterie NZ)',m:0,mj:'ks'},{k:'S8',n:'Baterie (akumulátor) 12V 2,3 AH',m:24,mj:'ks'},{k:'S9',n:'Baterie (akumulátor) 12V 7,5 Ah (baterie UPS)',m:20,mj:'ks'},{k:'S264',n:'Baterie AKU NP12-7,5AH',m:20,mj:'ks'},{k:'S252',n:'Beta nastavení',m:0,mj:'ks'},{k:'S13',n:'Bezpečnostní modul BOS-M',m:0,mj:'ks'},{k:'S14',n:'Brano speciál - pro Františka Křižíka 18, Praha',m:2,mj:'ks'},{k:'S15',n:'Cívka 48/12 VDC',m:0,mj:'ks'},{k:'S16',n:'Cívka pro OR MONTANARI 12V DC 11W',m:0,mj:'ks'},{k:'S17',n:'Cívka pro ventil GMV',m:3,mj:'ks'},{k:'S18',n:'CRM 91H',m:2,mj:'ks'},{k:'S19',n:'Časový modul RV-MSS',m:55,mj:'ks'},{k:'S20',n:'Čep kluzáku',m:6,mj:'ks'},{k:'S21',n:'Čtečka Dallas',m:1,mj:'ks'},{k:'S22',n:'Čtečka DS03',m:0,mj:'ks'},{k:'S23',n:'Dallas čipy',m:3,mj:'ks'},{k:'S24',n:'Displej DISP RVD01',m:3,mj:'ks'},{k:'S25',n:'Displej DISP TFT 530 REV 2 - VEGA',m:4,mj:'ks'},{k:'S26',n:'Displej LCD Dobrovolný - modrý',m:1,mj:'ks'},{k:'S49',n:'Displej šipka - invalidní (Dobrovolný)',m:3,mj:'ks'},{k:'S27',n:'Domeček pro vidličku vysoký FERMATOR - komplet spínač + vidlička',m:2,mj:'ks'},{k:'S29',n:'Dovírač DICTATOR VAR 100034-0 malé kolečko',m:8,mj:'ks'},{k:'S30',n:'Dovírač DICTATOR VAR 101001/100034 velké kolečko vroubky',m:13,mj:'ks'},{k:'S32',n:'Dovírač DictatorG/50N/ velké',m:28,mj:'ks'},{k:'S31',n:'Dovírač DictatorG/50N/24',m:10,mj:'ks'},{k:'S28',n:'Dovírač samostatný - Dorma STROJON',m:2,mj:'ks'},{k:'S34',n:'Dveřní kontakt DCA-F2',m:0,mj:'ks'},{k:'S35',n:'Dveřní kontakt EDC-61',m:0,mj:'ks'},{k:'S249',n:'Dveřní uzávěra METRON',m:1,mj:'ks'},{k:'S36',n:'DYNATECH - D-BOX',m:1,mj:'ks'},{k:'S37',n:'ENCODER LIKA H-10242CU442L11',m:0,mj:'ks'},{k:'S38',n:'ENCODER SASSI LEO 158-H10242CU48RL',m:0,mj:'ks'},{k:'S39',n:'FERMATOR 000419',m:2,mj:'ks'},{k:'S40',n:'FERMATOR červený - automaty',m:4,mj:'ks'},{k:'S41',n:'FERMATOR VVVF3',m:1,mj:'ks'},{k:'S42',n:'FERMATOR VVVF4',m:1,mj:'ks'},{k:'S43',n:'Fermátor-sestava uzávěry 4PC - 210/10/40',m:2,mj:'ks'},{k:'S44',n:'Fotobuňka FERMATOR CFT.FCCRC 0035/14',m:0,mj:'ks'},{k:'S45',n:'Fotobuňka STROJON',m:3,mj:'ks'},{k:'S248',n:'Fotobuňka TELCO (Infrasensor)',m:2,mj:'ks'},{k:'S256',n:'Fotolišta MEMCO',m:0,mj:'ks'},{k:'S255',n:'Fotolišta VEGA (sada)',m:0,mj:'ks'},{k:'S254',n:'Fotolišta WECO (sada)',m:0,mj:'ks'},{k:'S46',n:'FRONTIER 368/24V',m:0,mj:'ks'},{k:'S47',n:'GSM brána 2N',m:1,mj:'ks'},{k:'S48',n:'Gumový doraz',m:0,mj:'ks'},{k:'S227',n:'Halogen 12V 205 lumen',m:0,mj:'ks'},{k:'S50',n:'Jednotka do rozvaděče OR-A3',m:0,mj:'ks'},{k:'S51',n:'Jednotka relé RV-BJR2',m:0,mj:'ks'},{k:'S52',n:'Jistič C25/3 25 A C 3póy',m:0,mj:'ks'},{k:'S53',n:'Kabel CYKY 5x2,5',m:0,mj:'bm'},{k:'S54',n:'karta E 261',m:0,mj:'ks'},{k:'S258',n:'Kladka BG30 M',m:0,mj:'ks'},{k:'S55',n:'Kladka centrická černá hluboká drážka zaoblená',m:12,mj:'ks'},{k:'S56',n:'Kladka centrická grafitová zaoblená 48x14, 10x9,8',m:3,mj:'ks'},{k:'S57',n:'Kladka centrická hnědá zaoblená 48x14, 10x9,8',m:10,mj:'ks'},{k:'S58',n:'Kladka centrická rovná drážka 56x17, 6x11,3',m:5,mj:'ks'},{k:'S59',n:'Kladka excentrická černá, malá 33x14x11 Hnědá',m:14,mj:'ks'},{k:'S60',n:'Kladka excentrická grafitová',m:9,mj:'ks'},{k:'S61',n:'Kladka excentrická rovná drážka 44x17, 3x10,3',m:0,mj:'ks'},{k:'S62',n:'Kladka excentrická rovná drážka 54x17, 6x13,7',m:0,mj:'ks'},{k:'S63',n:'Kladka na vodící lanko hnědá',m:27,mj:'ks'},{k:'S64',n:'Klapačka/vahadlo FERMATOR 210/10/40/ST',m:2,mj:'ks'},{k:'S65',n:'Klapačka/vahadlo zajištění dvěří STROJON  1-8121',m:2,mj:'ks'},{k:'S33',n:'Kluzák 2017 T3 slim',m:12,mj:'ks'},{k:'S66',n:'Kluzák bílý 2017',m:89,mj:'ks'},{k:'S68',n:'Kluzák bílý od 2018',m:18,mj:'ks'},{k:'S261',n:'Kluzák Dorma - nový typ',m:23,mj:'ks'},{k:'S69',n:'Kluzák Dorma - starý typ',m:26,mj:'ks'},{k:'S67',n:'Kluzák šedý do 2018',m:43,mj:'ks'},{k:'S70',n:'Kniha výtahu',m:0,mj:'ks'},{k:'S366',n:'Kolínko odvodu oleje',m:5,mj:'ks'},{k:'S71',n:'Komunikátor',m:0,mj:'ks'},{k:'S72',n:'Komunikátor do kabiny 2N',m:0,mj:'ks'},{k:'S372',n:'Kontakt pomocný PK 22E',m:2,mj:'ks'},{k:'S73',n:'Křivka WYKOV OK1',m:0,mj:'ks'},{k:'S74',n:'Křivka WYKOV OM48/10',m:3,mj:'ks'},{k:'S75',n:'LA 1 KN 11',m:1,mj:'ks'},{k:'S76',n:'LA4KC1B',m:1,mj:'ks'},{k:'S77',n:'LADN11',m:2,mj:'ks'},{k:'S78',n:'LADN40',m:2,mj:'ks'},{k:'S222',n:'LC1D09F7',m:0,mj:'ks'},{k:'S243',n:'LED nouze 200lm',m:2,mj:'ks'},{k:'S79',n:'Lišta pro táhlo STROJON - DORMA',m:3,mj:'ks'},{k:'S80',n:'LP1K0901BD',m:4,mj:'ks'},{k:'S81',n:'LPK0901ED3',m:1,mj:'ks'},{k:'S82',n:'Magnet pro křivku WYKOV velký hrnce',m:0,mj:'ks'},{k:'S83',n:'Maticová poloh.VTA-BEPOL',m:1,mj:'ks'},{k:'S88',n:'Měnič frekvenční UNIDRIVE 32/35A',m:1,mj:'ks'},{k:'S89',n:'Měnič frekvenční UNIDRIVE 9,5/11A',m:0,mj:'ks'},{k:'S90',n:'Měnič frekvenční YASKAWA CIMR-U7CC45P5',m:1,mj:'ks'},{k:'S91',n:'METRON - automaty DO.010034',m:1,mj:'ks'},{k:'S92',n:'MOLIK 09G1-DC24A',m:2,mj:'ks'},{k:'S94',n:'Motor dveří STROJON G162YG394',m:2,mj:'ks'},{k:'S368',n:'Motor VEGA KIT-KOTPM5182026-SH16',m:1,mj:'ks'},{k:'S151',n:'MS1 wykov - snímač',m:4,mj:'ks'},{k:'S95',n:'Nabíječka baterií',m:0,mj:'ks'},{k:'S96',n:'Napájení lišty PRIVAMED - napájení lišty na LDN',m:0,mj:'ks'},{k:'S97',n:'Napěťová karta BUS Metron M2',m:1,mj:'ks'},{k:'V262',n:'Napínací kladka COMAQ - provedení levé',m:0,mj:'ks'},{k:'V263',n:'Napínací kladka COMAQ - provedení pravé',m:0,mj:'ks'},{k:'S98',n:'Nouzové otevírání dveří METRON',m:0,mj:'ks'},{k:'S99',n:'Nouzové otevření dveří sada STROJON - N-640',m:1,mj:'ks'},{k:'S100',n:'Obraceče polarity',m:0,mj:'ks'},{k:'S101',n:'Odrušovací člen s LED',m:0,mj:'ks'},{k:'S107',n:'Olověný AKU NP12-2,3AH NPP(T1)',m:20,mj:'ks'},{k:'S108',n:'Omezovač rychlosti MONTANARI RQ300 0,51',m:0,mj:'ks'},{k:'S225',n:'OR-A3',m:0,mj:'ks'},{k:'S109',n:'Ovládací rameno BUS',m:2,mj:'ks'},{k:'S266',n:'Ovladač FAB 2P klíč G9225',m:2,mj:'ks'},{k:'S110',n:'Ozubený řemen HTD',m:26,mj:'bm'},{k:'S111',n:'Páčka STROJON - N-218',m:0,mj:'ks'},{k:'S112',n:'Páčky pro zámek ručních dveří',m:30,mj:'ks'},{k:'S113',n:'Panty dveří STROJON - náklaďáky',m:26,mj:'ks'},{k:'S114',n:'Patice 9404',m:0,mj:'ks'},{k:'S115',n:'Patice SCHRACK YPT78704',m:0,mj:'ks'},{k:'S116',n:'PEPPERLY FUCHS/BB10-P.F1/33/35/59/102/115-7',m:0,mj:'ks'},{k:'S231',n:'Pojistka 10 A',m:0,mj:'ks'},{k:'S234',n:'Pojistka 16 A',m:0,mj:'ks'},{k:'S235',n:'Pojistka 23 A',m:0,mj:'ks'},{k:'S228',n:'Pojistka 25 A',m:0,mj:'ks'},{k:'S230',n:'Pojistka 32 A',m:0,mj:'ks'},{k:'S237',n:'Pojistka 35 A',m:0,mj:'ks'},{k:'S229',n:'Pojistka 40 A',m:0,mj:'ks'},{k:'S232',n:'Pojistka 6 A',m:0,mj:'ks'},{k:'S233',n:'Pojistka 63 A',m:0,mj:'ks'},{k:'S236',n:'Pojistka 63 A',m:0,mj:'ks'},{k:'S117',n:'Pružina dveří Fermátor',m:0,mj:'ks'},{k:'S118',n:'Pružina STROJON Bohouš delší',m:0,mj:'ks'},{k:'S119',n:'Pružina STROJON Bohouš malá černá',m:0,mj:'ks'},{k:'S120',n:'Pružina STROJON dlouhá',m:2,mj:'ks'},{k:'S121',n:'Pružina STROJON krátká',m:2,mj:'ks'},{k:'S122',n:'Pružina STROJON standard',m:2,mj:'ks'},{k:'S123',n:'Přivolávač VTA FMRT',m:0,mj:'ks'},{k:'S124',n:'Přivolávač VTA-BEPOL/SM-50/DISP',m:0,mj:'ks'},{k:'S125',n:'Přivolávač VTA-EVYST/LED/ZA-24V',m:0,mj:'ks'},{k:'S126',n:'Přivolávač VTA-MEXP 16',m:0,mj:'ks'},{k:'S127',n:'Relé 5534',m:0,mj:'ks'},{k:'S128',n:'Relé pro stykač - L1KN20',m:4,mj:'ks'},{k:'S129',n:'Relé PT570730',m:0,mj:'ks'},{k:'S220',n:'Rozvaděč a příslušenství-Maříkova 2',m:1,mj:'ks'},{k:'S130',n:'RV-MSS (modul ke zdroji)',m:0,mj:'ks'},{k:'S131',n:'Řídící jednotka OMEGA',m:1,mj:'ks'},{k:'S132',n:'Řídící jednotka VEGA',m:0,mj:'ks'},{k:'S133',n:'Řídící jednotka WECO',m:0,mj:'ks'},{k:'S134',n:'Řídící karta BUS Metron M2',m:1,mj:'ks'},{k:'S135',n:'Řídící karta dveří FERMATOR C2TV4',m:3,mj:'ks'},{k:'S136',n:'Řídící karta dveří FERMATOR ECC',m:3,mj:'ks'},{k:'S137',n:'Řídící karta dveří FERMATOR ECC+',m:1,mj:'ks'},{k:'S138',n:'Řídící karta rozvaděče BETA VTA 971 nová',m:3,mj:'ks'},{k:'S139',n:'Řídící karta rozvaděče BETA VTA 971 starší',m:5,mj:'ks'},{k:'S140',n:'Řídící karta rozvaděče Dobrovolný',m:1,mj:'ks'},{k:'S141',n:'Řídící karta rozvaděče E148',m:0,mj:'ks'},{k:'S142',n:'Řídící karta rozvaděče E248',m:9,mj:'ks'},{k:'S143',n:'Řídící karta rozvaděče E348',m:1,mj:'ks'},{k:'S144',n:'Řídící karta rozvaděče RVM ALFA',m:1,mj:'ks'},{k:'S145',n:'Řídící karta rozvaděče RVM E',m:2,mj:'ks'},{k:'S146',n:'Řídící karta rozvaděče TELSYS MKU',m:2,mj:'ks'},{k:'S285',n:'Řídící karta VTA-DOOR/CAN',m:3,mj:'ks'},{k:'S147',n:'Řídící motorek Metron',m:0,mj:'ks'},{k:'S148',n:'Sada 4 ks vodičů BUS KLEFER G3',m:2,mj:'ks'},{k:'V364',n:'Sada filců do samomazu',m:132,mj:'ks'},{k:'S149',n:'Samozavírač Wykov',m:0,mj:'ks'},{k:'S260',n:'Silonová vložka vodiče dv.panelu 14,8mm - Selcom spodní vedení',m:8,mj:'ks'},{k:'S150',n:'Slučovač 2N',m:2,mj:'ks'},{k:'S369',n:'Snímač 2x MS10/60-1A NO',m:1,mj:'ks'},{k:'S297',n:'Snímač bistabilní',m:2,mj:'ks'},{k:'S152',n:'Snímač HS1',m:0,mj:'ks'},{k:'S153',n:'Snímač HST-1P',m:0,mj:'ks'},{k:'S154',n:'Snímač magnetický monostabilní (Vsetín)',m:9,mj:'ks'},{k:'S365',n:'Snímač magnetický monostabilní - 2 kontakty',m:1,mj:'ks'},{k:'S155',n:'Snímač polohy OR',m:1,mj:'ks'},{k:'S156',n:'Snímač SPECIAL',m:0,mj:'ks'},{k:'S157',n:'Spínací jednotka CTP',m:0,mj:'ks'},{k:'S158',n:'Spínací zdroj na DIN lištu 24VDC',m:0,mj:'ks'},{k:'S159',n:'Spínač pro OR MONTANARI CMSM01',m:0,mj:'ks'},{k:'S160',n:'Spodní vedení dveří FERMATOR béžový A6H01P000000',m:7,mj:'ks'},{k:'S161',n:'Spodní vedení dveří FERMATOR sada A6H15B000000',m:0,mj:'ks'},{k:'S191',n:'Spodní vedení dveří STROJON',m:6,mj:'ks'},{k:'S162',n:'Spodní vedení křídel BUS METRON',m:2,mj:'ks'},{k:'S163',n:'Spoušť vypínací 110V',m:0,mj:'ks'},{k:'S221',n:'SR2A 201 BD - ZELIO',m:0,mj:'ks'},{k:'S164',n:'STROJON Bohouš - celý L - zámek kabinových dveří',m:0,mj:'ks'},{k:'S165',n:'STROJON Bohouš - celý P - zámek kabinových dveří',m:1,mj:'ks'},{k:'S166',n:'STROJON VEGA OPR 800-L-MW',m:3,mj:'ks'},{k:'S167',n:'STROJON VTA-DOOR-CAN 2PT1 bez fotobuňky SWV.4.09',m:1,mj:'ks'},{k:'S168',n:'STROJON VTA-DOOR/CAN 203894',m:2,mj:'ks'},{k:'S169',n:'Stykač 25A',m:0,mj:'ks'},{k:'S371',n:'Stykač C32.11 48V/50Hz',m:4,mj:'ks'},{k:'S170',n:'Stykač K 9A',m:0,mj:'ks'},{k:'S171',n:'Stykač K 9A 48VDC',m:2,mj:'ks'},{k:'S173',n:'Stykač LC1D25 P7',m:5,mj:'ks'},{k:'S174',n:'Stykač LC1D38 P7',m:1,mj:'ks'},{k:'S172',n:'Stykač LC1D50 P7',m:2,mj:'ks'},{k:'S176',n:'Svorkovnice lámací',m:0,mj:'ks'},{k:'S177',n:'SW 291 V 03.02.29 - Národní Divadlo výtahy V1,V2,V3 - displej',m:2,mj:'ks'},{k:'S178',n:'Switch glas - pro snímače',m:0,mj:'ks'},{k:'S179',n:'Táhlo pro dormu STROJON',m:0,mj:'ks'},{k:'S180',n:'Tenzometry - čidla omega',m:2,mj:'ks'},{k:'S265',n:'Tlačítko Achille',m:8,mj:'ks'},{k:'S181',n:'Tlačítko do tabla modré (BA 590) A4N13869',m:0,mj:'ks'},{k:'S182',n:'Tlačítko do tabla zelené (BA 590)',m:0,mj:'ks'},{k:'S370',n:'Tlačítko MT 42 2M XI',m:1,mj:'ks'},{k:'S183',n:'Tlačítko TL-EB42IX - oválné',m:5,mj:'ks'},{k:'S184',n:'Tlačítko TL-Kulaté kovové modré',m:0,mj:'ks'},{k:'S185',n:'Tlačítko TL-Kulaté kovové zelené',m:0,mj:'ks'},{k:'S367',n:'Tlačítko TL-MT42IX - čtvercové',m:5,mj:'ks'},{k:'S186',n:'Tlačítko TL-RT42IX  - kulaté',m:5,mj:'ks'},{k:'S187',n:'Tlačítko TL-VEGA otevři dveře',m:0,mj:'ks'},{k:'S188',n:'Topné těleso do oleje GMV',m:3,mj:'ks'},{k:'S190',n:'Varistor 250V',m:0,mj:'ks'},{k:'S192',n:'Visací zámek',m:11,mj:'ks'},{k:'S244',n:'Vnitřní páčka KDU 4',m:14,mj:'ks'},{k:'S194',n:'Vodící lanko dveří STROJON',m:1,mj:'ks'},{k:'S373',n:'Vodič dveří model Aries - kovový držák s plastovým vodičem',m:8,mj:'ks'},{k:'S195',n:'Vodítko do prahu sematic (Zbůch)',m:42,mj:'ks'},{k:'S196',n:'Voice station 2N - pod a na kabinu',m:1,mj:'ks'},{k:'S197',n:'VTA-LED VÝSTPNÍ/ZA24',m:0,mj:'ks'},{k:'S246',n:'VTL 01 Dobrovolný',m:7,mj:'ks'},{k:'S198',n:'WECO 09G1-DC24A',m:0,mj:'ks'},{k:'S199',n:'Zámek - vyndat klíč obě polohy',m:7,mj:'ks'},{k:'S200',n:'Zámek - vyndat klíč pouze v jedné poloze',m:11,mj:'ks'},{k:'S201',n:'Zámek dveří STROJON EU-DL811/2 CLR',m:0,mj:'ks'},{k:'S202',n:'Zámek STROJON KRONENBERG',m:9,mj:'ks'},{k:'S203',n:'Zdroj 72W 24V 5A',m:0,mj:'ks'},{k:'S204',n:'Zdroj E217',m:1,mj:'ks'},{k:'V360',n:'Zdroj E233',m:0,mj:'ks'},{k:'S205',n:'Zdroj E283',m:0,mj:'ks'},{k:'S206',n:'Zdroj E289',m:1,mj:'ks'},{k:'S223',n:'Zdroj E291',m:0,mj:'ks'},{k:'S224',n:'Zdroj E292',m:0,mj:'ks'},{k:'S207',n:'Zdroj E293',m:2,mj:'ks'},{k:'S208',n:'Zdroj E296',m:2,mj:'ks'},{k:'S209',n:'Zdroj E350',m:3,mj:'ks'},{k:'S210',n:'Zdroj E352A',m:8,mj:'ks'},{k:'S211',n:'Zdroj E353',m:1,mj:'ks'},{k:'S212',n:'Zdroj G586/24V',m:0,mj:'ks'},{k:'S213',n:'Zdroj WECO 220V/03.65.PWS.ZDZ.230',m:5,mj:'ks'},{k:'S259',n:'Zdroj záložní UPS 1200VA+držák',m:6,mj:'ks'},{k:'S214',n:'Zdroj záložní UPS 900VA+držák',m:13,mj:'ks'},{k:'S215',n:'Zdrojová jednotka E221',m:2,mj:'ks'},{k:'S216',n:'Zdrojová jednotka E233',m:3,mj:'ks'},{k:'S217',n:'Zdrojová jednotka E349',m:3,mj:'ks'},{k:'S218',n:'Zdrojová jednotka E349 B',m:1,mj:'ks'},{k:'S219',n:'Zpožděný rozběh',m:6,mj:'ks'},{k:'V363',n:'Žárovka LED60',m:0,mj:'ks'}
+];
+
+var sortCol='n', sortDir=1, filterMode='all';
+
+function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+
+function hl(text, q){
+  if(!q) return text;
+  var nt=norm(text), nq=norm(q);
+  var i=nt.indexOf(nq);
+  if(i<0) return text;
+  return text.slice(0,i)+'<mark>'+text.slice(i,i+q.length)+'</mark>'+text.slice(i+q.length);
+}
+
+function render(){
+  try {
+    var raw = document.getElementById('search').value.trim();
+    var q = norm(raw);
+    var rows = data.filter(function(r){
+      if(filterMode==='skladem' && r.m<=0) return false;
+      if(filterMode==='zero' && r.m>0) return false;
+      if(!q) return true;
+      return norm(r.n).indexOf(q)>=0 || norm(r.k).indexOf(q)>=0;
+    });
+    rows.sort(function(a,b){
+      var av = sortCol==='m' ? a.m : (sortCol==='k' ? a.k : a.n);
+      var bv = sortCol==='m' ? b.m : (sortCol==='k' ? b.k : b.n);
+      if(typeof av==='number') return (av-bv)*sortDir;
+      return String(av||'').localeCompare(String(bv||''),'cs')*sortDir;
+    });
+    document.getElementById('stats').textContent = rows.length + ' / ' + data.length + ' položek';
+    var html = '';
+    for(var i=0; i<rows.length; i++){
+      var r = rows[i];
+      html += '<tr>';
+      html += '<td>'+hl(r.k, raw)+'</td>';
+      html += '<td>'+hl(r.n||'—', raw)+'</td>';
+      html += '</tr>';
+    }
+    document.getElementById('tbody').innerHTML = html;
+  } catch(e) {
+    document.getElementById('stats').textContent = 'Chyba zobrazení: ' + e.message;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('search').addEventListener('input', render);
+  var btns = document.querySelectorAll('.filter-btn');
+  for(var i=0; i<btns.length; i++){
+    btns[i].addEventListener('click', function(){
+      for(var j=0; j<btns.length; j++) btns[j].classList.remove('active');
+      this.classList.add('active');
+      filterMode = this.getAttribute('data-filter');
+      render();
+    });
+  }
+  var ths = document.querySelectorAll('thead th[data-col]');
+  for(var i=0; i<ths.length; i++){
+    ths[i].addEventListener('click', function(){
+      var col = this.getAttribute('data-col');
+      if(sortCol===col) sortDir*=-1; else {sortCol=col; sortDir=1;}
+      render();
+    });
+  }
+  render();
+});
+</script>
+</body>
+</html>
