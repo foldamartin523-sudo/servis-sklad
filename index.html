@@ -875,18 +875,53 @@ document.getElementById('search').addEventListener('input', function(){
 });
 
 // --- EDITACE ---
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwfRwxbY-_TO2LR-ug0tr3-tSo7TF1exbTmSU3tGyUhOiXAD_pQsm1XsHX9z3qnrlxR/exec';
+
 function loadEdits() {
+  // Načti localStorage ihned
   try {
     var edits = JSON.parse(localStorage.getItem('sklad_edits') || '{}');
-    for (var id in edits) {
-      var el = document.getElementById('label_' + id);
-      if (el && edits[id].n) { el.textContent = edits[id].n; el.classList.add('edited'); }
-      var kel = document.getElementById('klabel_' + id);
-      if (kel && edits[id].k) { kel.textContent = edits[id].k; kel.classList.add('edited'); }
-      var qel = document.getElementById('qty_' + id);
-      if (qel && edits[id].qty !== undefined) { qel.textContent = edits[id].qty; qel.classList.add('edited'); }
-    }
+    applyEdits(edits);
   } catch(e) {}
+  // Pak načti ze Sheets (přepíše localStorage data)
+  fetch(SCRIPT_URL + '?action=get')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      // data = { "S13": "5", "S7": "10", ... }
+      var edits = JSON.parse(localStorage.getItem('sklad_edits') || '{}');
+      for (var karta in data) {
+        // najdi id podle klabel
+        var found = findIdByKarta(karta);
+        if (found) {
+          if (!edits[found]) edits[found] = {};
+          edits[found].qty = data[karta];
+        }
+      }
+      localStorage.setItem('sklad_edits', JSON.stringify(edits));
+      applyEdits(edits);
+    })
+    .catch(function(){});
+}
+
+function findIdByKarta(karta) {
+  var spans = document.querySelectorAll('[id^="klabel_"]');
+  for (var i = 0; i < spans.length; i++) {
+    if (spans[i].textContent.trim() === karta) {
+      return spans[i].id.replace('klabel_', '');
+    }
+  }
+  return null;
+}
+
+function applyEdits(edits) {
+  for (var id in edits) {
+    var el = document.getElementById('label_' + id);
+    if (el && edits[id].n) { el.textContent = edits[id].n; el.classList.add('edited'); }
+    var kel = document.getElementById('klabel_' + id);
+    if (kel && edits[id].k) { kel.textContent = edits[id].k; kel.classList.add('edited'); }
+    var qel = document.getElementById('qty_' + id);
+    if (qel && edits[id].qty !== undefined) { qel.textContent = edits[id].qty; qel.classList.add('edited'); }
+  }
 }
 
 function saveEdit(id, field, value) {
@@ -896,6 +931,13 @@ function saveEdit(id, field, value) {
     edits[id][field] = value;
     localStorage.setItem('sklad_edits', JSON.stringify(edits));
   } catch(e) {}
+  // Pokud jde o množství, ulož do Sheets
+  if (field === 'qty') {
+    var kel = document.getElementById('klabel_' + id);
+    var karta = kel ? kel.textContent.trim() : id;
+    fetch(SCRIPT_URL + '?action=set&karta=' + encodeURIComponent(karta) + '&qty=' + encodeURIComponent(value))
+      .catch(function(){});
+  }
 }
 
 function startEdit(el, id, field, e) {
