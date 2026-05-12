@@ -7,119 +7,925 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: Arial, sans-serif; font-size: 14px; background: #f4f6f8; color: #222; }
-header { background: #1F4E79; color: white; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-header h1 { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
-.controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-#search { padding: 8px 14px; border: none; border-radius: 6px; font-size: 14px; width: 280px; outline: none; }
-.filter-btn { padding: 7px 14px; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 6px; background: transparent; color: white; font-size: 13px; cursor: pointer; }
-.filter-btn.active { background: white; color: #1F4E79; font-weight: bold; border-color: white; }
+header { background: #1F4E79; color: white; padding: 16px 24px; }
+header h1 { font-size: 20px; font-weight: bold; letter-spacing: 1px; margin-bottom: 10px; }
+#search { padding: 8px 14px; border: none; border-radius: 6px; font-size: 14px; width: 100%; outline: none; }
 .stats { padding: 8px 24px; background: #e8f0f7; font-size: 13px; color: #555; border-bottom: 1px solid #cdd8e3; }
-.table-wrap { padding: 16px 24px; overflow-x: auto; }
+.table-wrap { padding: 12px; overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-thead th { background: #1F4E79; color: white; padding: 10px 14px; text-align: left; font-size: 13px; cursor: pointer; user-select: none; white-space: nowrap; }
-thead th:hover { background: #174070; }
+thead th { background: #1F4E79; color: white; padding: 10px 14px; text-align: left; font-size: 13px; white-space: nowrap; }
 tbody tr { border-bottom: 1px solid #eee; }
 tbody tr:hover { background: #f0f6ff; }
-td { padding: 8px 14px; }
-td:nth-child(1) { color: #888; font-size: 12px; font-family: monospace; }
-mark { background: #ffe87c; border-radius: 2px; padding: 0 1px; }
-@media (max-width: 600px) {
-  #search { width: 100%; }
-  .table-wrap { padding: 8px; }
-  header { padding: 12px 16px; }
-}
+td { padding: 9px 14px; }
+td:nth-child(1) { color: #888; font-size: 12px; font-family: monospace; width: 80px; }
+tr.hidden { display: none; }
+tbody tr.data-row { cursor: pointer; }
+tbody tr.data-row:active { background: #dce8f7; }
+tr.detail-row td { padding: 0; border-bottom: 2px solid #1F4E79; }
+tr.detail-row.hidden { display: none; }
+.detail-box { padding: 12px 16px; background: #f8fbff; display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+.detail-box img { max-width: 180px; max-height: 180px; border-radius: 6px; border: 1px solid #cdd8e3; object-fit: contain; background: white; }
+.no-photo { width: 120px; height: 90px; background: #eee; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 12px; border: 1px dashed #ccc; flex-shrink: 0; }
+.detail-text { flex: 1; min-width: 160px; }
+.detail-text .popis { font-size: 13px; color: #444; margin-top: 4px; font-style: italic; }
+.detail-text .karta-label { font-size: 11px; color: #999; font-family: monospace; }
+.arrow { float: right; font-size: 10px; color: #aaa; }
+tr.open .arrow { transform: rotate(180deg); display: inline-block; }
+.editable { cursor: text; border-bottom: 1px dashed transparent; padding: 1px 2px; border-radius: 2px; }
+.editable:hover { border-bottom: 1px dashed #aaa; background: #fffbe6; }
+.edit-input { border: 1px solid #1F4E79; border-radius: 4px; padding: 2px 6px; font-size: 14px; font-family: Arial, sans-serif; width: 95%; outline: none; }
+.edited { color: #1a6e1a; }
 </style>
 </head>
 <body>
 <header>
   <h1>SKLAD SERVIS</h1>
-  <div class="controls">
-    <input type="text" id="search" placeholder="Hledat název nebo kartu..." autocomplete="off" />
-    <button class="filter-btn active" data-filter="all">Vše</button>
-  </div>
+  <input type="text" id="search" placeholder="Hledat název nebo kartu..." autocomplete="off" />
 </header>
 <div class="stats" id="stats"></div>
 <div class="table-wrap">
-<table id="tbl">
-  <thead>
-    <tr>
-      <th data-col="k" style="width:100px">Karta ↕</th>
-      <th data-col="n">Název ↕</th>
-    </tr>
-  </thead>
-  <tbody id="tbody"></tbody>
+<table>
+  <thead><tr><th>Karta</th><th>Název</th></tr></thead>
+  <tbody id="tbody">
+<tr class="data-row" onclick="toggleDetail('S245')" data-k="s245" data-n="15x čip+čtečka"><td><span class="editable" id="klabel_S245">S245</span></td><td><span class="editable" id="label_S245">15x čip+čtečka</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S245"><td colspan="2"><div class="detail-box"><img src="foto/S245.jpg" alt="S245" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S245</div><div class="popis" id="popis_S245">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S1')" data-k="s1" data-n="a23"><td><span class="editable" id="klabel_S1">S1</span></td><td><span class="editable" id="label_S1">A23</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S1"><td colspan="2"><div class="detail-box"><img src="foto/S1.jpg" alt="S1" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S1</div><div class="popis" id="popis_S1">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S2')" data-k="s2" data-n="alpha bus sada vidlicka domecek 20031-a"><td><span class="editable" id="klabel_S2">S2</span></td><td><span class="editable" id="label_S2">ALPHA BUS sada vidlička, domeček 20031-A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S2"><td colspan="2"><div class="detail-box"><img src="foto/S2.jpg" alt="S2" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S2</div><div class="popis" id="popis_S2">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S3')" data-k="s3" data-n="alpha bus samostatny plastovy valecek na cep"><td><span class="editable" id="klabel_S3">S3</span></td><td><span class="editable" id="label_S3">ALPHA BUS samostatný plastový váleček na čep</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S3"><td colspan="2"><div class="detail-box"><img src="foto/S3.jpg" alt="S3" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S3</div><div class="popis" id="popis_S3">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S4___B')" data-k="s4 - b" data-n="alpha bus trojuhelnik komplet sada b"><td><span class="editable" id="klabel_S4___B">S4 - B</span></td><td><span class="editable" id="label_S4___B">ALPHA BUS trojúhelník komplet sada B</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S4___B"><td colspan="2"><div class="detail-box"><img src="foto/S4 - B.jpg" alt="S4 - B" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S4 - B</div><div class="popis" id="popis_S4___B">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S4')" data-k="s4" data-n="alpha bus trojuhelnik komplet sada bb"><td><span class="editable" id="klabel_S4">S4</span></td><td><span class="editable" id="label_S4">ALPHA BUS trojúhelník komplet sada BB</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S4"><td colspan="2"><div class="detail-box"><img src="foto/S4.jpg" alt="S4" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S4</div><div class="popis" id="popis_S4">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S4___BH')" data-k="s4 - bh" data-n="alpha bus trojuhelnik komplet sada bh"><td><span class="editable" id="klabel_S4___BH">S4 - BH</span></td><td><span class="editable" id="label_S4___BH">ALPHA BUS trojúhelník komplet sada BH</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S4___BH"><td colspan="2"><div class="detail-box"><img src="foto/S4 - BH.jpg" alt="S4 - BH" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S4 - BH</div><div class="popis" id="popis_S4___BH">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S5')" data-k="s5" data-n="autol 2000 sprej"><td><span class="editable" id="klabel_S5">S5</span></td><td><span class="editable" id="label_S5">Autol 2000 sprej</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S5"><td colspan="2"><div class="detail-box"><img src="foto/S5.jpg" alt="S5" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S5</div><div class="popis" id="popis_S5">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S6')" data-k="s6" data-n="axsp3po2012n 230v ac/13,8"><td><span class="editable" id="klabel_S6">S6</span></td><td><span class="editable" id="label_S6">AXSP3PO2012N 230V AC/13,8</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S6"><td colspan="2"><div class="detail-box"><img src="foto/S6.jpg" alt="S6" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S6</div><div class="popis" id="popis_S6">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S7')" data-k="s7" data-n="baterie akumulator 12v 1,3 ah baterie nz"><td><span class="editable" id="klabel_S7">S7</span></td><td><span class="editable" id="label_S7">Baterie (akumulátor) 12V 1,3 AH (baterie NZ)</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S7"><td colspan="2"><div class="detail-box"><img src="foto/S7.jpg" alt="S7" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S7</div><div class="popis" id="popis_S7">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S8')" data-k="s8" data-n="baterie akumulator 12v 2,3 ah"><td><span class="editable" id="klabel_S8">S8</span></td><td><span class="editable" id="label_S8">Baterie (akumulátor) 12V 2,3 AH</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S8"><td colspan="2"><div class="detail-box"><img src="foto/S8.jpg" alt="S8" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S8</div><div class="popis" id="popis_S8">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S9')" data-k="s9" data-n="baterie akumulator 12v 7,5 ah baterie ups"><td><span class="editable" id="klabel_S9">S9</span></td><td><span class="editable" id="label_S9">Baterie (akumulátor) 12V 7,5 Ah (baterie UPS)</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S9"><td colspan="2"><div class="detail-box"><img src="foto/S9.jpg" alt="S9" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S9</div><div class="popis" id="popis_S9">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S264')" data-k="s264" data-n="baterie aku np12-7,5ah"><td><span class="editable" id="klabel_S264">S264</span></td><td><span class="editable" id="label_S264">Baterie AKU NP12-7,5AH</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S264"><td colspan="2"><div class="detail-box"><img src="foto/S264.jpg" alt="S264" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S264</div><div class="popis" id="popis_S264">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S252')" data-k="s252" data-n="beta nastaveni"><td><span class="editable" id="klabel_S252">S252</span></td><td><span class="editable" id="label_S252">Beta nastavení</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S252"><td colspan="2"><div class="detail-box"><img src="foto/S252.jpg" alt="S252" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S252</div><div class="popis" id="popis_S252">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S13')" data-k="s13" data-n="bezpecnostni modul bos-m"><td><span class="editable" id="klabel_S13">S13</span></td><td><span class="editable" id="label_S13">Bezpečnostní modul BOS-M</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S13"><td colspan="2"><div class="detail-box"><img src="foto/S13.jpg" alt="S13" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S13</div><div class="popis" id="popis_S13">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S14')" data-k="s14" data-n="brano special pro frantiska krizika 18 praha"><td><span class="editable" id="klabel_S14">S14</span></td><td><span class="editable" id="label_S14">Brano speciál - pro Františka Křižíka 18, Praha</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S14"><td colspan="2"><div class="detail-box"><img src="foto/S14.jpg" alt="S14" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S14</div><div class="popis" id="popis_S14">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S15')" data-k="s15" data-n="civka 48/12 vdc"><td><span class="editable" id="klabel_S15">S15</span></td><td><span class="editable" id="label_S15">Cívka 48/12 VDC</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S15"><td colspan="2"><div class="detail-box"><img src="foto/S15.jpg" alt="S15" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S15</div><div class="popis" id="popis_S15">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S16')" data-k="s16" data-n="civka pro or montanari 12v dc 11w"><td><span class="editable" id="klabel_S16">S16</span></td><td><span class="editable" id="label_S16">Cívka pro OR MONTANARI 12V DC 11W</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S16"><td colspan="2"><div class="detail-box"><img src="foto/S16.jpg" alt="S16" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S16</div><div class="popis" id="popis_S16">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S17')" data-k="s17" data-n="civka pro ventil gmv"><td><span class="editable" id="klabel_S17">S17</span></td><td><span class="editable" id="label_S17">Cívka pro ventil GMV</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S17"><td colspan="2"><div class="detail-box"><img src="foto/S17.jpg" alt="S17" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S17</div><div class="popis" id="popis_S17">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S18')" data-k="s18" data-n="crm 91h"><td><span class="editable" id="klabel_S18">S18</span></td><td><span class="editable" id="label_S18">CRM 91H</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S18"><td colspan="2"><div class="detail-box"><img src="foto/S18.jpg" alt="S18" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S18</div><div class="popis" id="popis_S18">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S19')" data-k="s19" data-n="casovy modul rv-mss"><td><span class="editable" id="klabel_S19">S19</span></td><td><span class="editable" id="label_S19">Časový modul RV-MSS</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S19"><td colspan="2"><div class="detail-box"><img src="foto/S19.jpg" alt="S19" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S19</div><div class="popis" id="popis_S19">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S20')" data-k="s20" data-n="cep kluzaku"><td><span class="editable" id="klabel_S20">S20</span></td><td><span class="editable" id="label_S20">Čep kluzáku</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S20"><td colspan="2"><div class="detail-box"><img src="foto/S20.jpg" alt="S20" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S20</div><div class="popis" id="popis_S20">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S21')" data-k="s21" data-n="ctecka dallas"><td><span class="editable" id="klabel_S21">S21</span></td><td><span class="editable" id="label_S21">Čtečka Dallas</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S21"><td colspan="2"><div class="detail-box"><img src="foto/S21.jpg" alt="S21" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S21</div><div class="popis" id="popis_S21">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S22')" data-k="s22" data-n="ctecka ds03"><td><span class="editable" id="klabel_S22">S22</span></td><td><span class="editable" id="label_S22">Čtečka DS03</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S22"><td colspan="2"><div class="detail-box"><img src="foto/S22.jpg" alt="S22" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S22</div><div class="popis" id="popis_S22">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S23')" data-k="s23" data-n="dallas cipy"><td><span class="editable" id="klabel_S23">S23</span></td><td><span class="editable" id="label_S23">Dallas čipy</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S23"><td colspan="2"><div class="detail-box"><img src="foto/S23.jpg" alt="S23" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S23</div><div class="popis" id="popis_S23">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S24')" data-k="s24" data-n="displej disp rvd01"><td><span class="editable" id="klabel_S24">S24</span></td><td><span class="editable" id="label_S24">Displej DISP RVD01</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S24"><td colspan="2"><div class="detail-box"><img src="foto/S24.jpg" alt="S24" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S24</div><div class="popis" id="popis_S24">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S25')" data-k="s25" data-n="displej disp tft 530 rev 2 vega"><td><span class="editable" id="klabel_S25">S25</span></td><td><span class="editable" id="label_S25">Displej DISP TFT 530 REV 2 - VEGA</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S25"><td colspan="2"><div class="detail-box"><img src="foto/S25.jpg" alt="S25" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S25</div><div class="popis" id="popis_S25">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S26')" data-k="s26" data-n="displej lcd dobrovolny modry"><td><span class="editable" id="klabel_S26">S26</span></td><td><span class="editable" id="label_S26">Displej LCD Dobrovolný - modrý</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S26"><td colspan="2"><div class="detail-box"><img src="foto/S26.jpg" alt="S26" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S26</div><div class="popis" id="popis_S26">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S49')" data-k="s49" data-n="displej sipka invalidni dobrovolny"><td><span class="editable" id="klabel_S49">S49</span></td><td><span class="editable" id="label_S49">Displej šipka - invalidní (Dobrovolný)</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S49"><td colspan="2"><div class="detail-box"><img src="foto/S49.jpg" alt="S49" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S49</div><div class="popis" id="popis_S49">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S27')" data-k="s27" data-n="domecek pro vidlicku vysoky fermator komplet spinac vidlicka"><td><span class="editable" id="klabel_S27">S27</span></td><td><span class="editable" id="label_S27">Domeček pro vidličku vysoký FERMATOR - komplet spínač + vidlička</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S27"><td colspan="2"><div class="detail-box"><img src="foto/S27.jpg" alt="S27" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S27</div><div class="popis" id="popis_S27">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S29')" data-k="s29" data-n="dovirac dictator var 100034-0 male kolecko"><td><span class="editable" id="klabel_S29">S29</span></td><td><span class="editable" id="label_S29">Dovírač DICTATOR VAR 100034-0 malé kolečko</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S29"><td colspan="2"><div class="detail-box"><img src="foto/S29.jpg" alt="S29" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S29</div><div class="popis" id="popis_S29">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S30')" data-k="s30" data-n="dovirac dictator var 101001/100034 velke kolecko vroubky"><td><span class="editable" id="klabel_S30">S30</span></td><td><span class="editable" id="label_S30">Dovírač DICTATOR VAR 101001/100034 velké kolečko vroubky</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S30"><td colspan="2"><div class="detail-box"><img src="foto/S30.jpg" alt="S30" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S30</div><div class="popis" id="popis_S30">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S32')" data-k="s32" data-n="dovirac dictatorg/50n/ velke"><td><span class="editable" id="klabel_S32">S32</span></td><td><span class="editable" id="label_S32">Dovírač DictatorG/50N/ velké</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S32"><td colspan="2"><div class="detail-box"><img src="foto/S32.jpg" alt="S32" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S32</div><div class="popis" id="popis_S32">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S31')" data-k="s31" data-n="dovirac dictatorg/50n/24"><td><span class="editable" id="klabel_S31">S31</span></td><td><span class="editable" id="label_S31">Dovírač DictatorG/50N/24</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S31"><td colspan="2"><div class="detail-box"><img src="foto/S31.jpg" alt="S31" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S31</div><div class="popis" id="popis_S31">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S28')" data-k="s28" data-n="dovirac samostatny dorma strojon"><td><span class="editable" id="klabel_S28">S28</span></td><td><span class="editable" id="label_S28">Dovírač samostatný - Dorma STROJON</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S28"><td colspan="2"><div class="detail-box"><img src="foto/S28.jpg" alt="S28" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S28</div><div class="popis" id="popis_S28">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S34')" data-k="s34" data-n="dverni kontakt dca-f2"><td><span class="editable" id="klabel_S34">S34</span></td><td><span class="editable" id="label_S34">Dveřní kontakt DCA-F2</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S34"><td colspan="2"><div class="detail-box"><img src="foto/S34.jpg" alt="S34" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S34</div><div class="popis" id="popis_S34">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S35')" data-k="s35" data-n="dverni kontakt edc-61"><td><span class="editable" id="klabel_S35">S35</span></td><td><span class="editable" id="label_S35">Dveřní kontakt EDC-61</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S35"><td colspan="2"><div class="detail-box"><img src="foto/S35.jpg" alt="S35" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S35</div><div class="popis" id="popis_S35">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S249')" data-k="s249" data-n="dverni uzavera metron"><td><span class="editable" id="klabel_S249">S249</span></td><td><span class="editable" id="label_S249">Dveřní uzávěra METRON</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S249"><td colspan="2"><div class="detail-box"><img src="foto/S249.jpg" alt="S249" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S249</div><div class="popis" id="popis_S249">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S36')" data-k="s36" data-n="dynatech d-box"><td><span class="editable" id="klabel_S36">S36</span></td><td><span class="editable" id="label_S36">DYNATECH - D-BOX</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S36"><td colspan="2"><div class="detail-box"><img src="foto/S36.jpg" alt="S36" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S36</div><div class="popis" id="popis_S36">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S37')" data-k="s37" data-n="encoder lika h-10242cu442l11"><td><span class="editable" id="klabel_S37">S37</span></td><td><span class="editable" id="label_S37">ENCODER LIKA H-10242CU442L11</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S37"><td colspan="2"><div class="detail-box"><img src="foto/S37.jpg" alt="S37" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S37</div><div class="popis" id="popis_S37">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S38')" data-k="s38" data-n="encoder sassi leo 158-h10242cu48rl"><td><span class="editable" id="klabel_S38">S38</span></td><td><span class="editable" id="label_S38">ENCODER SASSI LEO 158-H10242CU48RL</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S38"><td colspan="2"><div class="detail-box"><img src="foto/S38.jpg" alt="S38" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S38</div><div class="popis" id="popis_S38">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S39')" data-k="s39" data-n="fermator 000419"><td><span class="editable" id="klabel_S39">S39</span></td><td><span class="editable" id="label_S39">FERMATOR 000419</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S39"><td colspan="2"><div class="detail-box"><img src="foto/S39.jpg" alt="S39" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S39</div><div class="popis" id="popis_S39">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S40')" data-k="s40" data-n="fermator cerveny automaty"><td><span class="editable" id="klabel_S40">S40</span></td><td><span class="editable" id="label_S40">FERMATOR červený - automaty</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S40"><td colspan="2"><div class="detail-box"><img src="foto/S40.jpg" alt="S40" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S40</div><div class="popis" id="popis_S40">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S41')" data-k="s41" data-n="fermator vvvf3"><td><span class="editable" id="klabel_S41">S41</span></td><td><span class="editable" id="label_S41">FERMATOR VVVF3</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S41"><td colspan="2"><div class="detail-box"><img src="foto/S41.jpg" alt="S41" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S41</div><div class="popis" id="popis_S41">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S42')" data-k="s42" data-n="fermator vvvf4"><td><span class="editable" id="klabel_S42">S42</span></td><td><span class="editable" id="label_S42">FERMATOR VVVF4</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S42"><td colspan="2"><div class="detail-box"><img src="foto/S42.jpg" alt="S42" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S42</div><div class="popis" id="popis_S42">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S43')" data-k="s43" data-n="fermator sestava uzavery 4pc 210/10/40"><td><span class="editable" id="klabel_S43">S43</span></td><td><span class="editable" id="label_S43">Fermátor-sestava uzávěry 4PC - 210/10/40</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S43"><td colspan="2"><div class="detail-box"><img src="foto/S43.jpg" alt="S43" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S43</div><div class="popis" id="popis_S43">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S44')" data-k="s44" data-n="fotobunka fermator cft.fccrc 0035/14"><td><span class="editable" id="klabel_S44">S44</span></td><td><span class="editable" id="label_S44">Fotobuňka FERMATOR CFT.FCCRC 0035/14</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S44"><td colspan="2"><div class="detail-box"><img src="foto/S44.jpg" alt="S44" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S44</div><div class="popis" id="popis_S44">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S45')" data-k="s45" data-n="fotobunka strojon"><td><span class="editable" id="klabel_S45">S45</span></td><td><span class="editable" id="label_S45">Fotobuňka STROJON</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S45"><td colspan="2"><div class="detail-box"><img src="foto/S45.jpg" alt="S45" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S45</div><div class="popis" id="popis_S45">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S248')" data-k="s248" data-n="fotobunka telco infrasensor"><td><span class="editable" id="klabel_S248">S248</span></td><td><span class="editable" id="label_S248">Fotobuňka TELCO (Infrasensor)</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S248"><td colspan="2"><div class="detail-box"><img src="foto/S248.jpg" alt="S248" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S248</div><div class="popis" id="popis_S248">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S256')" data-k="s256" data-n="fotolista memco"><td><span class="editable" id="klabel_S256">S256</span></td><td><span class="editable" id="label_S256">Fotolišta MEMCO</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S256"><td colspan="2"><div class="detail-box"><img src="foto/S256.jpg" alt="S256" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S256</div><div class="popis" id="popis_S256">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S255')" data-k="s255" data-n="fotolista vega sada"><td><span class="editable" id="klabel_S255">S255</span></td><td><span class="editable" id="label_S255">Fotolišta VEGA (sada)</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S255"><td colspan="2"><div class="detail-box"><img src="foto/S255.jpg" alt="S255" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S255</div><div class="popis" id="popis_S255">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S254')" data-k="s254" data-n="fotolista weco sada"><td><span class="editable" id="klabel_S254">S254</span></td><td><span class="editable" id="label_S254">Fotolišta WECO (sada)</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S254"><td colspan="2"><div class="detail-box"><img src="foto/S254.jpg" alt="S254" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S254</div><div class="popis" id="popis_S254">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S46')" data-k="s46" data-n="frontier 368/24v"><td><span class="editable" id="klabel_S46">S46</span></td><td><span class="editable" id="label_S46">FRONTIER 368/24V</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S46"><td colspan="2"><div class="detail-box"><img src="foto/S46.jpg" alt="S46" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S46</div><div class="popis" id="popis_S46">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S47')" data-k="s47" data-n="gsm brana 2n"><td><span class="editable" id="klabel_S47">S47</span></td><td><span class="editable" id="label_S47">GSM brána 2N</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S47"><td colspan="2"><div class="detail-box"><img src="foto/S47.jpg" alt="S47" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S47</div><div class="popis" id="popis_S47">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S48')" data-k="s48" data-n="gumovy doraz"><td><span class="editable" id="klabel_S48">S48</span></td><td><span class="editable" id="label_S48">Gumový doraz</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S48"><td colspan="2"><div class="detail-box"><img src="foto/S48.jpg" alt="S48" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S48</div><div class="popis" id="popis_S48">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S227')" data-k="s227" data-n="halogen 12v 205 lumen"><td><span class="editable" id="klabel_S227">S227</span></td><td><span class="editable" id="label_S227">Halogen 12V 205 lumen</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S227"><td colspan="2"><div class="detail-box"><img src="foto/S227.jpg" alt="S227" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S227</div><div class="popis" id="popis_S227">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S50')" data-k="s50" data-n="jednotka do rozavadece or-a3"><td><span class="editable" id="klabel_S50">S50</span></td><td><span class="editable" id="label_S50">Jednotka do rozvaděče OR-A3</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S50"><td colspan="2"><div class="detail-box"><img src="foto/S50.jpg" alt="S50" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S50</div><div class="popis" id="popis_S50">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S51')" data-k="s51" data-n="jednotka rele rv-bjr2"><td><span class="editable" id="klabel_S51">S51</span></td><td><span class="editable" id="label_S51">Jednotka relé RV-BJR2</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S51"><td colspan="2"><div class="detail-box"><img src="foto/S51.jpg" alt="S51" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S51</div><div class="popis" id="popis_S51">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S52')" data-k="s52" data-n="jistic c25/3 25 a c 3poly"><td><span class="editable" id="klabel_S52">S52</span></td><td><span class="editable" id="label_S52">Jistič C25/3 25 A C 3póy</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S52"><td colspan="2"><div class="detail-box"><img src="foto/S52.jpg" alt="S52" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S52</div><div class="popis" id="popis_S52">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S53')" data-k="s53" data-n="kabel cyky 5x2,5"><td><span class="editable" id="klabel_S53">S53</span></td><td><span class="editable" id="label_S53">Kabel CYKY 5x2,5</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S53"><td colspan="2"><div class="detail-box"><img src="foto/S53.jpg" alt="S53" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S53</div><div class="popis" id="popis_S53">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S54')" data-k="s54" data-n="karta e 261"><td><span class="editable" id="klabel_S54">S54</span></td><td><span class="editable" id="label_S54">karta E 261</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S54"><td colspan="2"><div class="detail-box"><img src="foto/S54.jpg" alt="S54" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S54</div><div class="popis" id="popis_S54">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S258')" data-k="s258" data-n="kladka bg30 m"><td><span class="editable" id="klabel_S258">S258</span></td><td><span class="editable" id="label_S258">Kladka BG30 M</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S258"><td colspan="2"><div class="detail-box"><img src="foto/S258.jpg" alt="S258" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S258</div><div class="popis" id="popis_S258">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S55')" data-k="s55" data-n="kladka centricka cerna hluboka drazka zaoblena"><td><span class="editable" id="klabel_S55">S55</span></td><td><span class="editable" id="label_S55">Kladka centrická černá hluboká drážka zaoblená</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S55"><td colspan="2"><div class="detail-box"><img src="foto/S55.jpg" alt="S55" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S55</div><div class="popis" id="popis_S55">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S56')" data-k="s56" data-n="kladka centricka grafitova zaoblena 48x14 10x9,8"><td><span class="editable" id="klabel_S56">S56</span></td><td><span class="editable" id="label_S56">Kladka centrická grafitová zaoblená 48x14, 10x9,8</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S56"><td colspan="2"><div class="detail-box"><img src="foto/S56.jpg" alt="S56" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S56</div><div class="popis" id="popis_S56">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S57')" data-k="s57" data-n="kladka centricka hneda zaoblena 48x14 10x9,8"><td><span class="editable" id="klabel_S57">S57</span></td><td><span class="editable" id="label_S57">Kladka centrická hnědá zaoblená 48x14, 10x9,8</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S57"><td colspan="2"><div class="detail-box"><img src="foto/S57.jpg" alt="S57" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S57</div><div class="popis" id="popis_S57">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S58')" data-k="s58" data-n="kladka centricka rovna drazka 56x17 6x11,3"><td><span class="editable" id="klabel_S58">S58</span></td><td><span class="editable" id="label_S58">Kladka centrická rovná drážka 56x17, 6x11,3</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S58"><td colspan="2"><div class="detail-box"><img src="foto/S58.jpg" alt="S58" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S58</div><div class="popis" id="popis_S58">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S59')" data-k="s59" data-n="kladka excentricka cerna mala 33x14x11 hneda"><td><span class="editable" id="klabel_S59">S59</span></td><td><span class="editable" id="label_S59">Kladka excentrická černá, malá 33x14x11 Hnědá</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S59"><td colspan="2"><div class="detail-box"><img src="foto/S59.jpg" alt="S59" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S59</div><div class="popis" id="popis_S59">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S60')" data-k="s60" data-n="kladka excentricka grafitova"><td><span class="editable" id="klabel_S60">S60</span></td><td><span class="editable" id="label_S60">Kladka excentrická grafitová</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S60"><td colspan="2"><div class="detail-box"><img src="foto/S60.jpg" alt="S60" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S60</div><div class="popis" id="popis_S60">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S61')" data-k="s61" data-n="kladka excentricka rovna drazka 44x17 3x10,3"><td><span class="editable" id="klabel_S61">S61</span></td><td><span class="editable" id="label_S61">Kladka excentrická rovná drážka 44x17, 3x10,3</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S61"><td colspan="2"><div class="detail-box"><img src="foto/S61.jpg" alt="S61" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S61</div><div class="popis" id="popis_S61">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S62')" data-k="s62" data-n="kladka excentricka rovna drazka 54x17 6x13,7"><td><span class="editable" id="klabel_S62">S62</span></td><td><span class="editable" id="label_S62">Kladka excentrická rovná drážka 54x17, 6x13,7</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S62"><td colspan="2"><div class="detail-box"><img src="foto/S62.jpg" alt="S62" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S62</div><div class="popis" id="popis_S62">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S63')" data-k="s63" data-n="kladka na vodici lanko hneda"><td><span class="editable" id="klabel_S63">S63</span></td><td><span class="editable" id="label_S63">Kladka na vodící lanko hnědá</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S63"><td colspan="2"><div class="detail-box"><img src="foto/S63.jpg" alt="S63" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S63</div><div class="popis" id="popis_S63">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S64')" data-k="s64" data-n="klapacka vahadlo fermator 210/10/40/st"><td><span class="editable" id="klabel_S64">S64</span></td><td><span class="editable" id="label_S64">Klapačka/vahadlo FERMATOR 210/10/40/ST</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S64"><td colspan="2"><div class="detail-box"><img src="foto/S64.jpg" alt="S64" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S64</div><div class="popis" id="popis_S64">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S65')" data-k="s65" data-n="klapacka vahadlo zajisteni dveri strojon 1-8121"><td><span class="editable" id="klabel_S65">S65</span></td><td><span class="editable" id="label_S65">Klapačka/vahadlo zajištění dvěří STROJON 1-8121</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S65"><td colspan="2"><div class="detail-box"><img src="foto/S65.jpg" alt="S65" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S65</div><div class="popis" id="popis_S65">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S33')" data-k="s33" data-n="kluzak 2017 t3 slim"><td><span class="editable" id="klabel_S33">S33</span></td><td><span class="editable" id="label_S33">Kluzák 2017 T3 slim</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S33"><td colspan="2"><div class="detail-box"><img src="foto/S33.jpg" alt="S33" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S33</div><div class="popis" id="popis_S33">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S66')" data-k="s66" data-n="kluzak bily 2017"><td><span class="editable" id="klabel_S66">S66</span></td><td><span class="editable" id="label_S66">Kluzák bílý 2017</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S66"><td colspan="2"><div class="detail-box"><img src="foto/S66.jpg" alt="S66" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S66</div><div class="popis" id="popis_S66">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S68')" data-k="s68" data-n="kluzak bily od 2018"><td><span class="editable" id="klabel_S68">S68</span></td><td><span class="editable" id="label_S68">Kluzák bílý od 2018</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S68"><td colspan="2"><div class="detail-box"><img src="foto/S68.jpg" alt="S68" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S68</div><div class="popis" id="popis_S68">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S261')" data-k="s261" data-n="kluzak dorma novy typ"><td><span class="editable" id="klabel_S261">S261</span></td><td><span class="editable" id="label_S261">Kluzák Dorma - nový typ</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S261"><td colspan="2"><div class="detail-box"><img src="foto/S261.jpg" alt="S261" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S261</div><div class="popis" id="popis_S261">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S69')" data-k="s69" data-n="kluzak dorma stary typ"><td><span class="editable" id="klabel_S69">S69</span></td><td><span class="editable" id="label_S69">Kluzák Dorma - starý typ</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S69"><td colspan="2"><div class="detail-box"><img src="foto/S69.jpg" alt="S69" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S69</div><div class="popis" id="popis_S69">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S67')" data-k="s67" data-n="kluzak sedy do 2018"><td><span class="editable" id="klabel_S67">S67</span></td><td><span class="editable" id="label_S67">Kluzák šedý do 2018</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S67"><td colspan="2"><div class="detail-box"><img src="foto/S67.jpg" alt="S67" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S67</div><div class="popis" id="popis_S67">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S70')" data-k="s70" data-n="kniha vytahu"><td><span class="editable" id="klabel_S70">S70</span></td><td><span class="editable" id="label_S70">Kniha výtahu</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S70"><td colspan="2"><div class="detail-box"><img src="foto/S70.jpg" alt="S70" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S70</div><div class="popis" id="popis_S70">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S366')" data-k="s366" data-n="kolinko odvodu oleje"><td><span class="editable" id="klabel_S366">S366</span></td><td><span class="editable" id="label_S366">Kolínko odvodu oleje</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S366"><td colspan="2"><div class="detail-box"><img src="foto/S366.jpg" alt="S366" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S366</div><div class="popis" id="popis_S366">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S71')" data-k="s71" data-n="komunikator"><td><span class="editable" id="klabel_S71">S71</span></td><td><span class="editable" id="label_S71">Komunikátor</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S71"><td colspan="2"><div class="detail-box"><img src="foto/S71.jpg" alt="S71" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S71</div><div class="popis" id="popis_S71">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S72')" data-k="s72" data-n="komunikator do kabiny 2n"><td><span class="editable" id="klabel_S72">S72</span></td><td><span class="editable" id="label_S72">Komunikátor do kabiny 2N</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S72"><td colspan="2"><div class="detail-box"><img src="foto/S72.jpg" alt="S72" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S72</div><div class="popis" id="popis_S72">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S372')" data-k="s372" data-n="kontakt pomocny pk 22e"><td><span class="editable" id="klabel_S372">S372</span></td><td><span class="editable" id="label_S372">Kontakt pomocný PK 22E</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S372"><td colspan="2"><div class="detail-box"><img src="foto/S372.jpg" alt="S372" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S372</div><div class="popis" id="popis_S372">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S73')" data-k="s73" data-n="krivka wykov ok1"><td><span class="editable" id="klabel_S73">S73</span></td><td><span class="editable" id="label_S73">Křivka WYKOV OK1</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S73"><td colspan="2"><div class="detail-box"><img src="foto/S73.jpg" alt="S73" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S73</div><div class="popis" id="popis_S73">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S74')" data-k="s74" data-n="krivka wykov om48/10"><td><span class="editable" id="klabel_S74">S74</span></td><td><span class="editable" id="label_S74">Křivka WYKOV OM48/10</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S74"><td colspan="2"><div class="detail-box"><img src="foto/S74.jpg" alt="S74" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S74</div><div class="popis" id="popis_S74">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S75')" data-k="s75" data-n="la 1 kn 11"><td><span class="editable" id="klabel_S75">S75</span></td><td><span class="editable" id="label_S75">LA 1 KN 11</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S75"><td colspan="2"><div class="detail-box"><img src="foto/S75.jpg" alt="S75" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S75</div><div class="popis" id="popis_S75">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S76')" data-k="s76" data-n="la4kc1b"><td><span class="editable" id="klabel_S76">S76</span></td><td><span class="editable" id="label_S76">LA4KC1B</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S76"><td colspan="2"><div class="detail-box"><img src="foto/S76.jpg" alt="S76" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S76</div><div class="popis" id="popis_S76">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S77')" data-k="s77" data-n="ladn11"><td><span class="editable" id="klabel_S77">S77</span></td><td><span class="editable" id="label_S77">LADN11</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S77"><td colspan="2"><div class="detail-box"><img src="foto/S77.jpg" alt="S77" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S77</div><div class="popis" id="popis_S77">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S78')" data-k="s78" data-n="ladn40"><td><span class="editable" id="klabel_S78">S78</span></td><td><span class="editable" id="label_S78">LADN40</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S78"><td colspan="2"><div class="detail-box"><img src="foto/S78.jpg" alt="S78" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S78</div><div class="popis" id="popis_S78">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S222')" data-k="s222" data-n="lc1d09f7"><td><span class="editable" id="klabel_S222">S222</span></td><td><span class="editable" id="label_S222">LC1D09F7</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S222"><td colspan="2"><div class="detail-box"><img src="foto/S222.jpg" alt="S222" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S222</div><div class="popis" id="popis_S222">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S243')" data-k="s243" data-n="led nouze 200lm"><td><span class="editable" id="klabel_S243">S243</span></td><td><span class="editable" id="label_S243">LED nouze 200lm</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S243"><td colspan="2"><div class="detail-box"><img src="foto/S243.jpg" alt="S243" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S243</div><div class="popis" id="popis_S243">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S79')" data-k="s79" data-n="lista pro tahlo strojon dorma"><td><span class="editable" id="klabel_S79">S79</span></td><td><span class="editable" id="label_S79">Lišta pro táhlo STROJON - DORMA</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S79"><td colspan="2"><div class="detail-box"><img src="foto/S79.jpg" alt="S79" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S79</div><div class="popis" id="popis_S79">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S80')" data-k="s80" data-n="lp1k0901bd"><td><span class="editable" id="klabel_S80">S80</span></td><td><span class="editable" id="label_S80">LP1K0901BD</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S80"><td colspan="2"><div class="detail-box"><img src="foto/S80.jpg" alt="S80" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S80</div><div class="popis" id="popis_S80">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S81')" data-k="s81" data-n="lpk0901ed3"><td><span class="editable" id="klabel_S81">S81</span></td><td><span class="editable" id="label_S81">LPK0901ED3</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S81"><td colspan="2"><div class="detail-box"><img src="foto/S81.jpg" alt="S81" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S81</div><div class="popis" id="popis_S81">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S82')" data-k="s82" data-n="magnet pro krivku wykov velky hrnce"><td><span class="editable" id="klabel_S82">S82</span></td><td><span class="editable" id="label_S82">Magnet pro křivku WYKOV velký hrnce</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S82"><td colspan="2"><div class="detail-box"><img src="foto/S82.jpg" alt="S82" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S82</div><div class="popis" id="popis_S82">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S83')" data-k="s83" data-n="maticova poloh. vta-bepol"><td><span class="editable" id="klabel_S83">S83</span></td><td><span class="editable" id="label_S83">Maticová poloh.VTA-BEPOL</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S83"><td colspan="2"><div class="detail-box"><img src="foto/S83.jpg" alt="S83" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S83</div><div class="popis" id="popis_S83">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S88')" data-k="s88" data-n="menic frekvencni unidrive 32/35a"><td><span class="editable" id="klabel_S88">S88</span></td><td><span class="editable" id="label_S88">Měnič frekvenční UNIDRIVE 32/35A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S88"><td colspan="2"><div class="detail-box"><img src="foto/S88.jpg" alt="S88" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S88</div><div class="popis" id="popis_S88">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S89')" data-k="s89" data-n="menic frekvencni unidrive 9,5/11a"><td><span class="editable" id="klabel_S89">S89</span></td><td><span class="editable" id="label_S89">Měnič frekvenční UNIDRIVE 9,5/11A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S89"><td colspan="2"><div class="detail-box"><img src="foto/S89.jpg" alt="S89" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S89</div><div class="popis" id="popis_S89">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S90')" data-k="s90" data-n="menic frekvencni yaskawa cimr-u7cc45p5"><td><span class="editable" id="klabel_S90">S90</span></td><td><span class="editable" id="label_S90">Měnič frekvenční YASKAWA CIMR-U7CC45P5</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S90"><td colspan="2"><div class="detail-box"><img src="foto/S90.jpg" alt="S90" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S90</div><div class="popis" id="popis_S90">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S91')" data-k="s91" data-n="metron automaty do.010034"><td><span class="editable" id="klabel_S91">S91</span></td><td><span class="editable" id="label_S91">METRON - automaty DO.010034</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S91"><td colspan="2"><div class="detail-box"><img src="foto/S91.jpg" alt="S91" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S91</div><div class="popis" id="popis_S91">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S92')" data-k="s92" data-n="molik 09g1-dc24a"><td><span class="editable" id="klabel_S92">S92</span></td><td><span class="editable" id="label_S92">MOLIK 09G1-DC24A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S92"><td colspan="2"><div class="detail-box"><img src="foto/S92.jpg" alt="S92" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S92</div><div class="popis" id="popis_S92">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S94')" data-k="s94" data-n="motor dveri strojon g162yg394"><td><span class="editable" id="klabel_S94">S94</span></td><td><span class="editable" id="label_S94">Motor dveří STROJON G162YG394</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S94"><td colspan="2"><div class="detail-box"><img src="foto/S94.jpg" alt="S94" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S94</div><div class="popis" id="popis_S94">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S368')" data-k="s368" data-n="motor vega kit-kotpm5182026-sh16"><td><span class="editable" id="klabel_S368">S368</span></td><td><span class="editable" id="label_S368">Motor VEGA KIT-KOTPM5182026-SH16</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S368"><td colspan="2"><div class="detail-box"><img src="foto/S368.jpg" alt="S368" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S368</div><div class="popis" id="popis_S368">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S151')" data-k="s151" data-n="ms1 wykov snimac"><td><span class="editable" id="klabel_S151">S151</span></td><td><span class="editable" id="label_S151">MS1 wykov - snímač</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S151"><td colspan="2"><div class="detail-box"><img src="foto/S151.jpg" alt="S151" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S151</div><div class="popis" id="popis_S151">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S95')" data-k="s95" data-n="nabijecia baterii"><td><span class="editable" id="klabel_S95">S95</span></td><td><span class="editable" id="label_S95">Nabíječka baterií</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S95"><td colspan="2"><div class="detail-box"><img src="foto/S95.jpg" alt="S95" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S95</div><div class="popis" id="popis_S95">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S96')" data-k="s96" data-n="napajeni listy privamed napajeni listy na ldn"><td><span class="editable" id="klabel_S96">S96</span></td><td><span class="editable" id="label_S96">Napájení lišty PRIVAMED - napájení lišty na LDN</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S96"><td colspan="2"><div class="detail-box"><img src="foto/S96.jpg" alt="S96" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S96</div><div class="popis" id="popis_S96">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S97')" data-k="s97" data-n="napetova karta bus metron m2"><td><span class="editable" id="klabel_S97">S97</span></td><td><span class="editable" id="label_S97">Napěťová karta BUS Metron M2</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S97"><td colspan="2"><div class="detail-box"><img src="foto/S97.jpg" alt="S97" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S97</div><div class="popis" id="popis_S97">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('V262')" data-k="v262" data-n="napinaci kladka comaq provedeni leve"><td><span class="editable" id="klabel_V262">V262</span></td><td><span class="editable" id="label_V262">Napínací kladka COMAQ - provedení levé</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_V262"><td colspan="2"><div class="detail-box"><img src="foto/V262.jpg" alt="V262" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">V262</div><div class="popis" id="popis_V262">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('V263')" data-k="v263" data-n="napinaci kladka comaq provedeni prave"><td><span class="editable" id="klabel_V263">V263</span></td><td><span class="editable" id="label_V263">Napínací kladka COMAQ - provedení pravé</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_V263"><td colspan="2"><div class="detail-box"><img src="foto/V263.jpg" alt="V263" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">V263</div><div class="popis" id="popis_V263">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S98')" data-k="s98" data-n="nouzove otevirani dveri metron"><td><span class="editable" id="klabel_S98">S98</span></td><td><span class="editable" id="label_S98">Nouzové otevírání dveří METRON</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S98"><td colspan="2"><div class="detail-box"><img src="foto/S98.jpg" alt="S98" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S98</div><div class="popis" id="popis_S98">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S99')" data-k="s99" data-n="nouzove otevreni dveri sada strojon n-640"><td><span class="editable" id="klabel_S99">S99</span></td><td><span class="editable" id="label_S99">Nouzové otevření dveří sada STROJON - N-640</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S99"><td colspan="2"><div class="detail-box"><img src="foto/S99.jpg" alt="S99" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S99</div><div class="popis" id="popis_S99">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S100')" data-k="s100" data-n="obracece polarity"><td><span class="editable" id="klabel_S100">S100</span></td><td><span class="editable" id="label_S100">Obraceče polarity</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S100"><td colspan="2"><div class="detail-box"><img src="foto/S100.jpg" alt="S100" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S100</div><div class="popis" id="popis_S100">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S101')" data-k="s101" data-n="odrusovaci clen s led"><td><span class="editable" id="klabel_S101">S101</span></td><td><span class="editable" id="label_S101">Odrušovací člen s LED</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S101"><td colspan="2"><div class="detail-box"><img src="foto/S101.jpg" alt="S101" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S101</div><div class="popis" id="popis_S101">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S107')" data-k="s107" data-n="oloveny aku np12-2,3ah npp t1"><td><span class="editable" id="klabel_S107">S107</span></td><td><span class="editable" id="label_S107">Olověný AKU NP12-2,3AH NPP(T1)</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S107"><td colspan="2"><div class="detail-box"><img src="foto/S107.jpg" alt="S107" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S107</div><div class="popis" id="popis_S107">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S108')" data-k="s108" data-n="omezovac rychlosti montanari rq300 0,51"><td><span class="editable" id="klabel_S108">S108</span></td><td><span class="editable" id="label_S108">Omezovač rychlosti MONTANARI RQ300 0,51</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S108"><td colspan="2"><div class="detail-box"><img src="foto/S108.jpg" alt="S108" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S108</div><div class="popis" id="popis_S108">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S225')" data-k="s225" data-n="or-a3"><td><span class="editable" id="klabel_S225">S225</span></td><td><span class="editable" id="label_S225">OR-A3</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S225"><td colspan="2"><div class="detail-box"><img src="foto/S225.jpg" alt="S225" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S225</div><div class="popis" id="popis_S225">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S109')" data-k="s109" data-n="ovladaci rameno bus"><td><span class="editable" id="klabel_S109">S109</span></td><td><span class="editable" id="label_S109">Ovládací rameno BUS</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S109"><td colspan="2"><div class="detail-box"><img src="foto/S109.jpg" alt="S109" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S109</div><div class="popis" id="popis_S109">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S266')" data-k="s266" data-n="ovladac fab 2p klic g9225"><td><span class="editable" id="klabel_S266">S266</span></td><td><span class="editable" id="label_S266">Ovladač FAB 2P klíč G9225</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S266"><td colspan="2"><div class="detail-box"><img src="foto/S266.jpg" alt="S266" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S266</div><div class="popis" id="popis_S266">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S110')" data-k="s110" data-n="ozubeny remen htd"><td><span class="editable" id="klabel_S110">S110</span></td><td><span class="editable" id="label_S110">Ozubený řemen HTD</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S110"><td colspan="2"><div class="detail-box"><img src="foto/S110.jpg" alt="S110" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S110</div><div class="popis" id="popis_S110">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S111')" data-k="s111" data-n="packa strojon n-218"><td><span class="editable" id="klabel_S111">S111</span></td><td><span class="editable" id="label_S111">Páčka STROJON - N-218</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S111"><td colspan="2"><div class="detail-box"><img src="foto/S111.jpg" alt="S111" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S111</div><div class="popis" id="popis_S111">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S112')" data-k="s112" data-n="packy pro zamek rucnich dveri"><td><span class="editable" id="klabel_S112">S112</span></td><td><span class="editable" id="label_S112">Páčky pro zámek ručních dveří</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S112"><td colspan="2"><div class="detail-box"><img src="foto/S112.jpg" alt="S112" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S112</div><div class="popis" id="popis_S112">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S113')" data-k="s113" data-n="panty dveri strojon nakladaky"><td><span class="editable" id="klabel_S113">S113</span></td><td><span class="editable" id="label_S113">Panty dveří STROJON - náklaďáky</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S113"><td colspan="2"><div class="detail-box"><img src="foto/S113.jpg" alt="S113" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S113</div><div class="popis" id="popis_S113">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S114')" data-k="s114" data-n="patice 9404"><td><span class="editable" id="klabel_S114">S114</span></td><td><span class="editable" id="label_S114">Patice 9404</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S114"><td colspan="2"><div class="detail-box"><img src="foto/S114.jpg" alt="S114" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S114</div><div class="popis" id="popis_S114">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S115')" data-k="s115" data-n="patice schrack ypt78704"><td><span class="editable" id="klabel_S115">S115</span></td><td><span class="editable" id="label_S115">Patice SCHRACK YPT78704</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S115"><td colspan="2"><div class="detail-box"><img src="foto/S115.jpg" alt="S115" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S115</div><div class="popis" id="popis_S115">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S116')" data-k="s116" data-n="pepperly fuchs/bb10-p.f1/33/35/59/102/115-7"><td><span class="editable" id="klabel_S116">S116</span></td><td><span class="editable" id="label_S116">PEPPERLY FUCHS/BB10-P.F1/33/35/59/102/115-7</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S116"><td colspan="2"><div class="detail-box"><img src="foto/S116.jpg" alt="S116" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S116</div><div class="popis" id="popis_S116">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S231')" data-k="s231" data-n="pojistka 10 a"><td><span class="editable" id="klabel_S231">S231</span></td><td><span class="editable" id="label_S231">Pojistka 10 A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S231"><td colspan="2"><div class="detail-box"><img src="foto/S231.jpg" alt="S231" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S231</div><div class="popis" id="popis_S231">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S234')" data-k="s234" data-n="pojistka 16 a"><td><span class="editable" id="klabel_S234">S234</span></td><td><span class="editable" id="label_S234">Pojistka 16 A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S234"><td colspan="2"><div class="detail-box"><img src="foto/S234.jpg" alt="S234" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S234</div><div class="popis" id="popis_S234">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S235')" data-k="s235" data-n="pojistka 23 a"><td><span class="editable" id="klabel_S235">S235</span></td><td><span class="editable" id="label_S235">Pojistka 23 A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S235"><td colspan="2"><div class="detail-box"><img src="foto/S235.jpg" alt="S235" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S235</div><div class="popis" id="popis_S235">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S228')" data-k="s228" data-n="pojistka 25 a"><td><span class="editable" id="klabel_S228">S228</span></td><td><span class="editable" id="label_S228">Pojistka 25 A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S228"><td colspan="2"><div class="detail-box"><img src="foto/S228.jpg" alt="S228" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S228</div><div class="popis" id="popis_S228">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S230')" data-k="s230" data-n="pojistka 32 a"><td><span class="editable" id="klabel_S230">S230</span></td><td><span class="editable" id="label_S230">Pojistka 32 A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S230"><td colspan="2"><div class="detail-box"><img src="foto/S230.jpg" alt="S230" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S230</div><div class="popis" id="popis_S230">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S237')" data-k="s237" data-n="pojistka 35 a"><td><span class="editable" id="klabel_S237">S237</span></td><td><span class="editable" id="label_S237">Pojistka 35 A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S237"><td colspan="2"><div class="detail-box"><img src="foto/S237.jpg" alt="S237" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S237</div><div class="popis" id="popis_S237">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S229')" data-k="s229" data-n="pojistka 40 a"><td><span class="editable" id="klabel_S229">S229</span></td><td><span class="editable" id="label_S229">Pojistka 40 A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S229"><td colspan="2"><div class="detail-box"><img src="foto/S229.jpg" alt="S229" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S229</div><div class="popis" id="popis_S229">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S232')" data-k="s232" data-n="pojistka 6 a"><td><span class="editable" id="klabel_S232">S232</span></td><td><span class="editable" id="label_S232">Pojistka 6 A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S232"><td colspan="2"><div class="detail-box"><img src="foto/S232.jpg" alt="S232" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S232</div><div class="popis" id="popis_S232">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S233')" data-k="s233" data-n="pojistka 63 a"><td><span class="editable" id="klabel_S233">S233</span></td><td><span class="editable" id="label_S233">Pojistka 63 A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S233"><td colspan="2"><div class="detail-box"><img src="foto/S233.jpg" alt="S233" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S233</div><div class="popis" id="popis_S233">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S236')" data-k="s236" data-n="pojistka 63 a s236"><td><span class="editable" id="klabel_S236">S236</span></td><td><span class="editable" id="label_S236">Pojistka 63 A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S236"><td colspan="2"><div class="detail-box"><img src="foto/S236.jpg" alt="S236" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S236</div><div class="popis" id="popis_S236">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S117')" data-k="s117" data-n="pruzina dveri fermator"><td><span class="editable" id="klabel_S117">S117</span></td><td><span class="editable" id="label_S117">Pružina dveří Fermátor</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S117"><td colspan="2"><div class="detail-box"><img src="foto/S117.jpg" alt="S117" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S117</div><div class="popis" id="popis_S117">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S118')" data-k="s118" data-n="pruzina strojon bohous delsi"><td><span class="editable" id="klabel_S118">S118</span></td><td><span class="editable" id="label_S118">Pružina STROJON Bohouš delší</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S118"><td colspan="2"><div class="detail-box"><img src="foto/S118.jpg" alt="S118" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S118</div><div class="popis" id="popis_S118">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S119')" data-k="s119" data-n="pruzina strojon bohous mala cerna"><td><span class="editable" id="klabel_S119">S119</span></td><td><span class="editable" id="label_S119">Pružina STROJON Bohouš malá černá</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S119"><td colspan="2"><div class="detail-box"><img src="foto/S119.jpg" alt="S119" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S119</div><div class="popis" id="popis_S119">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S120')" data-k="s120" data-n="pruzina strojon dlouha"><td><span class="editable" id="klabel_S120">S120</span></td><td><span class="editable" id="label_S120">Pružina STROJON dlouhá</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S120"><td colspan="2"><div class="detail-box"><img src="foto/S120.jpg" alt="S120" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S120</div><div class="popis" id="popis_S120">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S121')" data-k="s121" data-n="pruzina strojon kratka"><td><span class="editable" id="klabel_S121">S121</span></td><td><span class="editable" id="label_S121">Pružina STROJON krátká</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S121"><td colspan="2"><div class="detail-box"><img src="foto/S121.jpg" alt="S121" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S121</div><div class="popis" id="popis_S121">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S122')" data-k="s122" data-n="pruzina strojon standard"><td><span class="editable" id="klabel_S122">S122</span></td><td><span class="editable" id="label_S122">Pružina STROJON standard</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S122"><td colspan="2"><div class="detail-box"><img src="foto/S122.jpg" alt="S122" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S122</div><div class="popis" id="popis_S122">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S123')" data-k="s123" data-n="privolavac vta fmrt"><td><span class="editable" id="klabel_S123">S123</span></td><td><span class="editable" id="label_S123">Přivolávač VTA FMRT</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S123"><td colspan="2"><div class="detail-box"><img src="foto/S123.jpg" alt="S123" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S123</div><div class="popis" id="popis_S123">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S124')" data-k="s124" data-n="privolavac vta-bepol/sm-50/disp"><td><span class="editable" id="klabel_S124">S124</span></td><td><span class="editable" id="label_S124">Přivolávač VTA-BEPOL/SM-50/DISP</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S124"><td colspan="2"><div class="detail-box"><img src="foto/S124.jpg" alt="S124" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S124</div><div class="popis" id="popis_S124">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S125')" data-k="s125" data-n="privolavac vta-evyst/led/za-24v"><td><span class="editable" id="klabel_S125">S125</span></td><td><span class="editable" id="label_S125">Přivolávač VTA-EVYST/LED/ZA-24V</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S125"><td colspan="2"><div class="detail-box"><img src="foto/S125.jpg" alt="S125" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S125</div><div class="popis" id="popis_S125">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S126')" data-k="s126" data-n="privolavac vta-mexp 16"><td><span class="editable" id="klabel_S126">S126</span></td><td><span class="editable" id="label_S126">Přivolávač VTA-MEXP 16</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S126"><td colspan="2"><div class="detail-box"><img src="foto/S126.jpg" alt="S126" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S126</div><div class="popis" id="popis_S126">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S127')" data-k="s127" data-n="rele 5534"><td><span class="editable" id="klabel_S127">S127</span></td><td><span class="editable" id="label_S127">Relé 5534</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S127"><td colspan="2"><div class="detail-box"><img src="foto/S127.jpg" alt="S127" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S127</div><div class="popis" id="popis_S127">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S128')" data-k="s128" data-n="rele pro stykac l1kn20"><td><span class="editable" id="klabel_S128">S128</span></td><td><span class="editable" id="label_S128">Relé pro stykač - L1KN20</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S128"><td colspan="2"><div class="detail-box"><img src="foto/S128.jpg" alt="S128" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S128</div><div class="popis" id="popis_S128">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S129')" data-k="s129" data-n="rele pt570730"><td><span class="editable" id="klabel_S129">S129</span></td><td><span class="editable" id="label_S129">Relé PT570730</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S129"><td colspan="2"><div class="detail-box"><img src="foto/S129.jpg" alt="S129" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S129</div><div class="popis" id="popis_S129">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S220')" data-k="s220" data-n="rozavadec a prislusenstvi marikova 2"><td><span class="editable" id="klabel_S220">S220</span></td><td><span class="editable" id="label_S220">Rozvaděč a příslušenství-Maříkova 2</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S220"><td colspan="2"><div class="detail-box"><img src="foto/S220.jpg" alt="S220" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S220</div><div class="popis" id="popis_S220">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S130')" data-k="s130" data-n="rv-mss modul ke zdroji"><td><span class="editable" id="klabel_S130">S130</span></td><td><span class="editable" id="label_S130">RV-MSS (modul ke zdroji)</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S130"><td colspan="2"><div class="detail-box"><img src="foto/S130.jpg" alt="S130" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S130</div><div class="popis" id="popis_S130">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S131')" data-k="s131" data-n="ridicí jednotka omega"><td><span class="editable" id="klabel_S131">S131</span></td><td><span class="editable" id="label_S131">Řídící jednotka OMEGA</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S131"><td colspan="2"><div class="detail-box"><img src="foto/S131.jpg" alt="S131" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S131</div><div class="popis" id="popis_S131">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S132')" data-k="s132" data-n="ridicí jednotka vega"><td><span class="editable" id="klabel_S132">S132</span></td><td><span class="editable" id="label_S132">Řídící jednotka VEGA</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S132"><td colspan="2"><div class="detail-box"><img src="foto/S132.jpg" alt="S132" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S132</div><div class="popis" id="popis_S132">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S133')" data-k="s133" data-n="ridicí jednotka weco"><td><span class="editable" id="klabel_S133">S133</span></td><td><span class="editable" id="label_S133">Řídící jednotka WECO</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S133"><td colspan="2"><div class="detail-box"><img src="foto/S133.jpg" alt="S133" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S133</div><div class="popis" id="popis_S133">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S134')" data-k="s134" data-n="ridicí karta bus metron m2"><td><span class="editable" id="klabel_S134">S134</span></td><td><span class="editable" id="label_S134">Řídící karta BUS Metron M2</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S134"><td colspan="2"><div class="detail-box"><img src="foto/S134.jpg" alt="S134" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S134</div><div class="popis" id="popis_S134">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S135')" data-k="s135" data-n="ridicí karta dveri fermator c2tv4"><td><span class="editable" id="klabel_S135">S135</span></td><td><span class="editable" id="label_S135">Řídící karta dveří FERMATOR C2TV4</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S135"><td colspan="2"><div class="detail-box"><img src="foto/S135.jpg" alt="S135" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S135</div><div class="popis" id="popis_S135">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S136')" data-k="s136" data-n="ridicí karta dveri fermator ecc"><td><span class="editable" id="klabel_S136">S136</span></td><td><span class="editable" id="label_S136">Řídící karta dveří FERMATOR ECC</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S136"><td colspan="2"><div class="detail-box"><img src="foto/S136.jpg" alt="S136" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S136</div><div class="popis" id="popis_S136">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S137')" data-k="s137" data-n="ridicí karta dveri fermator ecc+"><td><span class="editable" id="klabel_S137">S137</span></td><td><span class="editable" id="label_S137">Řídící karta dveří FERMATOR ECC+</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S137"><td colspan="2"><div class="detail-box"><img src="foto/S137.jpg" alt="S137" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S137</div><div class="popis" id="popis_S137">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S138')" data-k="s138" data-n="ridicí karta rozavadece beta vta 971 nova"><td><span class="editable" id="klabel_S138">S138</span></td><td><span class="editable" id="label_S138">Řídící karta rozvaděče BETA VTA 971 nová</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S138"><td colspan="2"><div class="detail-box"><img src="foto/S138.jpg" alt="S138" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S138</div><div class="popis" id="popis_S138">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S139')" data-k="s139" data-n="ridicí karta rozavadece beta vta 971 starsi"><td><span class="editable" id="klabel_S139">S139</span></td><td><span class="editable" id="label_S139">Řídící karta rozvaděče BETA VTA 971 starší</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S139"><td colspan="2"><div class="detail-box"><img src="foto/S139.jpg" alt="S139" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S139</div><div class="popis" id="popis_S139">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S140')" data-k="s140" data-n="ridicí karta rozavadece dobrovolny"><td><span class="editable" id="klabel_S140">S140</span></td><td><span class="editable" id="label_S140">Řídící karta rozvaděče Dobrovolný</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S140"><td colspan="2"><div class="detail-box"><img src="foto/S140.jpg" alt="S140" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S140</div><div class="popis" id="popis_S140">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S141')" data-k="s141" data-n="ridicí karta rozavadece e148"><td><span class="editable" id="klabel_S141">S141</span></td><td><span class="editable" id="label_S141">Řídící karta rozvaděče E148</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S141"><td colspan="2"><div class="detail-box"><img src="foto/S141.jpg" alt="S141" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S141</div><div class="popis" id="popis_S141">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S142')" data-k="s142" data-n="ridicí karta rozavadece e248"><td><span class="editable" id="klabel_S142">S142</span></td><td><span class="editable" id="label_S142">Řídící karta rozvaděče E248</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S142"><td colspan="2"><div class="detail-box"><img src="foto/S142.jpg" alt="S142" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S142</div><div class="popis" id="popis_S142">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S143')" data-k="s143" data-n="ridicí karta rozavadece e348"><td><span class="editable" id="klabel_S143">S143</span></td><td><span class="editable" id="label_S143">Řídící karta rozvaděče E348</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S143"><td colspan="2"><div class="detail-box"><img src="foto/S143.jpg" alt="S143" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S143</div><div class="popis" id="popis_S143">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S144')" data-k="s144" data-n="ridicí karta rozavadece rvm alfa"><td><span class="editable" id="klabel_S144">S144</span></td><td><span class="editable" id="label_S144">Řídící karta rozvaděče RVM ALFA</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S144"><td colspan="2"><div class="detail-box"><img src="foto/S144.jpg" alt="S144" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S144</div><div class="popis" id="popis_S144">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S145')" data-k="s145" data-n="ridicí karta rozavadece rvm e"><td><span class="editable" id="klabel_S145">S145</span></td><td><span class="editable" id="label_S145">Řídící karta rozvaděče RVM E</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S145"><td colspan="2"><div class="detail-box"><img src="foto/S145.jpg" alt="S145" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S145</div><div class="popis" id="popis_S145">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S146')" data-k="s146" data-n="ridicí karta rozavadece telsys mku"><td><span class="editable" id="klabel_S146">S146</span></td><td><span class="editable" id="label_S146">Řídící karta rozvaděče TELSYS MKU</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S146"><td colspan="2"><div class="detail-box"><img src="foto/S146.jpg" alt="S146" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S146</div><div class="popis" id="popis_S146">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S285')" data-k="s285" data-n="ridicí karta vta-door/can"><td><span class="editable" id="klabel_S285">S285</span></td><td><span class="editable" id="label_S285">Řídící karta VTA-DOOR/CAN</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S285"><td colspan="2"><div class="detail-box"><img src="foto/S285.jpg" alt="S285" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S285</div><div class="popis" id="popis_S285">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S147')" data-k="s147" data-n="ridicí motorek metron"><td><span class="editable" id="klabel_S147">S147</span></td><td><span class="editable" id="label_S147">Řídící motorek Metron</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S147"><td colspan="2"><div class="detail-box"><img src="foto/S147.jpg" alt="S147" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S147</div><div class="popis" id="popis_S147">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S148')" data-k="s148" data-n="sada 4 ks vodicu bus klefer g3"><td><span class="editable" id="klabel_S148">S148</span></td><td><span class="editable" id="label_S148">Sada 4 ks vodičů BUS KLEFER G3</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S148"><td colspan="2"><div class="detail-box"><img src="foto/S148.jpg" alt="S148" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S148</div><div class="popis" id="popis_S148">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('V364')" data-k="v364" data-n="sada filcu do samomazu"><td><span class="editable" id="klabel_V364">V364</span></td><td><span class="editable" id="label_V364">Sada filců do samomazu</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_V364"><td colspan="2"><div class="detail-box"><img src="foto/V364.jpg" alt="V364" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">V364</div><div class="popis" id="popis_V364">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S149')" data-k="s149" data-n="samozavirac wykov"><td><span class="editable" id="klabel_S149">S149</span></td><td><span class="editable" id="label_S149">Samozavírač Wykov</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S149"><td colspan="2"><div class="detail-box"><img src="foto/S149.jpg" alt="S149" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S149</div><div class="popis" id="popis_S149">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S260')" data-k="s260" data-n="silonova vlozka vodice dv.panelu 14,8mm selcom spodni vedeni"><td><span class="editable" id="klabel_S260">S260</span></td><td><span class="editable" id="label_S260">Silonová vložka vodiče dv.panelu 14,8mm - Selcom spodní vedení</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S260"><td colspan="2"><div class="detail-box"><img src="foto/S260.jpg" alt="S260" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S260</div><div class="popis" id="popis_S260">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S150')" data-k="s150" data-n="slucovac 2n"><td><span class="editable" id="klabel_S150">S150</span></td><td><span class="editable" id="label_S150">Slučovač 2N</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S150"><td colspan="2"><div class="detail-box"><img src="foto/S150.jpg" alt="S150" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S150</div><div class="popis" id="popis_S150">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S369')" data-k="s369" data-n="snimac 2x ms10/60-1a no"><td><span class="editable" id="klabel_S369">S369</span></td><td><span class="editable" id="label_S369">Snímač 2x MS10/60-1A NO</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S369"><td colspan="2"><div class="detail-box"><img src="foto/S369.jpg" alt="S369" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S369</div><div class="popis" id="popis_S369">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S297')" data-k="s297" data-n="snimac bistabilni"><td><span class="editable" id="klabel_S297">S297</span></td><td><span class="editable" id="label_S297">Snímač bistabilní</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S297"><td colspan="2"><div class="detail-box"><img src="foto/S297.jpg" alt="S297" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S297</div><div class="popis" id="popis_S297">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S152')" data-k="s152" data-n="snimac hs1"><td><span class="editable" id="klabel_S152">S152</span></td><td><span class="editable" id="label_S152">Snímač HS1</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S152"><td colspan="2"><div class="detail-box"><img src="foto/S152.jpg" alt="S152" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S152</div><div class="popis" id="popis_S152">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S153')" data-k="s153" data-n="snimac hst-1p"><td><span class="editable" id="klabel_S153">S153</span></td><td><span class="editable" id="label_S153">Snímač HST-1P</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S153"><td colspan="2"><div class="detail-box"><img src="foto/S153.jpg" alt="S153" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S153</div><div class="popis" id="popis_S153">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S154')" data-k="s154" data-n="snimac magneticky monostabilni vsetin"><td><span class="editable" id="klabel_S154">S154</span></td><td><span class="editable" id="label_S154">Snímač magnetický monostabilní (Vsetín)</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S154"><td colspan="2"><div class="detail-box"><img src="foto/S154.jpg" alt="S154" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S154</div><div class="popis" id="popis_S154">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S365')" data-k="s365" data-n="snimac magneticky monostabilni 2 kontakty"><td><span class="editable" id="klabel_S365">S365</span></td><td><span class="editable" id="label_S365">Snímač magnetický monostabilní - 2 kontakty</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S365"><td colspan="2"><div class="detail-box"><img src="foto/S365.jpg" alt="S365" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S365</div><div class="popis" id="popis_S365">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S155')" data-k="s155" data-n="snimac polohy or"><td><span class="editable" id="klabel_S155">S155</span></td><td><span class="editable" id="label_S155">Snímač polohy OR</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S155"><td colspan="2"><div class="detail-box"><img src="foto/S155.jpg" alt="S155" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S155</div><div class="popis" id="popis_S155">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S156')" data-k="s156" data-n="snimac special"><td><span class="editable" id="klabel_S156">S156</span></td><td><span class="editable" id="label_S156">Snímač SPECIAL</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S156"><td colspan="2"><div class="detail-box"><img src="foto/S156.jpg" alt="S156" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S156</div><div class="popis" id="popis_S156">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S157')" data-k="s157" data-n="spinaci jednotka ctp"><td><span class="editable" id="klabel_S157">S157</span></td><td><span class="editable" id="label_S157">Spínací jednotka CTP</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S157"><td colspan="2"><div class="detail-box"><img src="foto/S157.jpg" alt="S157" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S157</div><div class="popis" id="popis_S157">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S158')" data-k="s158" data-n="spinaci zdroj na din listu 24vdc"><td><span class="editable" id="klabel_S158">S158</span></td><td><span class="editable" id="label_S158">Spínací zdroj na DIN lištu 24VDC</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S158"><td colspan="2"><div class="detail-box"><img src="foto/S158.jpg" alt="S158" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S158</div><div class="popis" id="popis_S158">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S159')" data-k="s159" data-n="spinac pro or montanari cmsm01"><td><span class="editable" id="klabel_S159">S159</span></td><td><span class="editable" id="label_S159">Spínač pro OR MONTANARI CMSM01</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S159"><td colspan="2"><div class="detail-box"><img src="foto/S159.jpg" alt="S159" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S159</div><div class="popis" id="popis_S159">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S160')" data-k="s160" data-n="spodni vedeni dveri fermator bezovy a6h01p000000"><td><span class="editable" id="klabel_S160">S160</span></td><td><span class="editable" id="label_S160">Spodní vedení dveří FERMATOR béžový A6H01P000000</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S160"><td colspan="2"><div class="detail-box"><img src="foto/S160.jpg" alt="S160" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S160</div><div class="popis" id="popis_S160">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S161')" data-k="s161" data-n="spodni vedeni dveri fermator sada a6h15b000000"><td><span class="editable" id="klabel_S161">S161</span></td><td><span class="editable" id="label_S161">Spodní vedení dveří FERMATOR sada A6H15B000000</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S161"><td colspan="2"><div class="detail-box"><img src="foto/S161.jpg" alt="S161" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S161</div><div class="popis" id="popis_S161">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S191')" data-k="s191" data-n="spodni vedeni dveri strojon"><td><span class="editable" id="klabel_S191">S191</span></td><td><span class="editable" id="label_S191">Spodní vedení dveří STROJON</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S191"><td colspan="2"><div class="detail-box"><img src="foto/S191.jpg" alt="S191" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S191</div><div class="popis" id="popis_S191">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S162')" data-k="s162" data-n="spodni vedeni kridal bus metron"><td><span class="editable" id="klabel_S162">S162</span></td><td><span class="editable" id="label_S162">Spodní vedení křídel BUS METRON</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S162"><td colspan="2"><div class="detail-box"><img src="foto/S162.jpg" alt="S162" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S162</div><div class="popis" id="popis_S162">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S163')" data-k="s163" data-n="spoustí vypinaci 110v"><td><span class="editable" id="klabel_S163">S163</span></td><td><span class="editable" id="label_S163">Spoušť vypínací 110V</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S163"><td colspan="2"><div class="detail-box"><img src="foto/S163.jpg" alt="S163" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S163</div><div class="popis" id="popis_S163">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S221')" data-k="s221" data-n="sr2a 201 bd zelio"><td><span class="editable" id="klabel_S221">S221</span></td><td><span class="editable" id="label_S221">SR2A 201 BD - ZELIO</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S221"><td colspan="2"><div class="detail-box"><img src="foto/S221.jpg" alt="S221" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S221</div><div class="popis" id="popis_S221">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S164')" data-k="s164" data-n="strojon bohous cely l zamek kabinovych dveri"><td><span class="editable" id="klabel_S164">S164</span></td><td><span class="editable" id="label_S164">STROJON Bohouš - celý L - zámek kabinových dveří</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S164"><td colspan="2"><div class="detail-box"><img src="foto/S164.jpg" alt="S164" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S164</div><div class="popis" id="popis_S164">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S165')" data-k="s165" data-n="strojon bohous cely p zamek kabinovych dveri"><td><span class="editable" id="klabel_S165">S165</span></td><td><span class="editable" id="label_S165">STROJON Bohouš - celý P - zámek kabinových dveří</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S165"><td colspan="2"><div class="detail-box"><img src="foto/S165.jpg" alt="S165" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S165</div><div class="popis" id="popis_S165">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S166')" data-k="s166" data-n="strojon vega opr 800-l-mw"><td><span class="editable" id="klabel_S166">S166</span></td><td><span class="editable" id="label_S166">STROJON VEGA OPR 800-L-MW</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S166"><td colspan="2"><div class="detail-box"><img src="foto/S166.jpg" alt="S166" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S166</div><div class="popis" id="popis_S166">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S167')" data-k="s167" data-n="strojon vta-door-can 2pt1 bez fotobunky swv.4.09"><td><span class="editable" id="klabel_S167">S167</span></td><td><span class="editable" id="label_S167">STROJON VTA-DOOR-CAN 2PT1 bez fotobuňky SWV.4.09</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S167"><td colspan="2"><div class="detail-box"><img src="foto/S167.jpg" alt="S167" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S167</div><div class="popis" id="popis_S167">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S168')" data-k="s168" data-n="strojon vta-door/can 203894"><td><span class="editable" id="klabel_S168">S168</span></td><td><span class="editable" id="label_S168">STROJON VTA-DOOR/CAN 203894</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S168"><td colspan="2"><div class="detail-box"><img src="foto/S168.jpg" alt="S168" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S168</div><div class="popis" id="popis_S168">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S169')" data-k="s169" data-n="stykac 25a"><td><span class="editable" id="klabel_S169">S169</span></td><td><span class="editable" id="label_S169">Stykač 25A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S169"><td colspan="2"><div class="detail-box"><img src="foto/S169.jpg" alt="S169" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S169</div><div class="popis" id="popis_S169">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S371')" data-k="s371" data-n="stykac c32.11 48v/50hz"><td><span class="editable" id="klabel_S371">S371</span></td><td><span class="editable" id="label_S371">Stykač C32.11 48V/50Hz</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S371"><td colspan="2"><div class="detail-box"><img src="foto/S371.jpg" alt="S371" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S371</div><div class="popis" id="popis_S371">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S170')" data-k="s170" data-n="stykac k 9a"><td><span class="editable" id="klabel_S170">S170</span></td><td><span class="editable" id="label_S170">Stykač K 9A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S170"><td colspan="2"><div class="detail-box"><img src="foto/S170.jpg" alt="S170" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S170</div><div class="popis" id="popis_S170">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S171')" data-k="s171" data-n="stykac k 9a 48vdc"><td><span class="editable" id="klabel_S171">S171</span></td><td><span class="editable" id="label_S171">Stykač K 9A 48VDC</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S171"><td colspan="2"><div class="detail-box"><img src="foto/S171.jpg" alt="S171" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S171</div><div class="popis" id="popis_S171">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S173')" data-k="s173" data-n="stykac lc1d25 p7"><td><span class="editable" id="klabel_S173">S173</span></td><td><span class="editable" id="label_S173">Stykač LC1D25 P7</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S173"><td colspan="2"><div class="detail-box"><img src="foto/S173.jpg" alt="S173" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S173</div><div class="popis" id="popis_S173">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S174')" data-k="s174" data-n="stykac lc1d38 p7"><td><span class="editable" id="klabel_S174">S174</span></td><td><span class="editable" id="label_S174">Stykač LC1D38 P7</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S174"><td colspan="2"><div class="detail-box"><img src="foto/S174.jpg" alt="S174" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S174</div><div class="popis" id="popis_S174">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S172')" data-k="s172" data-n="stykac lc1d50 p7"><td><span class="editable" id="klabel_S172">S172</span></td><td><span class="editable" id="label_S172">Stykač LC1D50 P7</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S172"><td colspan="2"><div class="detail-box"><img src="foto/S172.jpg" alt="S172" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S172</div><div class="popis" id="popis_S172">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S176')" data-k="s176" data-n="svorkovnice lamaci"><td><span class="editable" id="klabel_S176">S176</span></td><td><span class="editable" id="label_S176">Svorkovnice lámací</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S176"><td colspan="2"><div class="detail-box"><img src="foto/S176.jpg" alt="S176" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S176</div><div class="popis" id="popis_S176">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S177')" data-k="s177" data-n="sw 291 v 03.02.29 narodni divadlo vytahy v1 v2 v3 displej"><td><span class="editable" id="klabel_S177">S177</span></td><td><span class="editable" id="label_S177">SW 291 V 03.02.29 - Národní Divadlo výtahy V1,V2,V3 - displej</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S177"><td colspan="2"><div class="detail-box"><img src="foto/S177.jpg" alt="S177" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S177</div><div class="popis" id="popis_S177">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S178')" data-k="s178" data-n="switch glas pro snimace"><td><span class="editable" id="klabel_S178">S178</span></td><td><span class="editable" id="label_S178">Switch glas - pro snímače</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S178"><td colspan="2"><div class="detail-box"><img src="foto/S178.jpg" alt="S178" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S178</div><div class="popis" id="popis_S178">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S179')" data-k="s179" data-n="tahlo pro dormu strojon"><td><span class="editable" id="klabel_S179">S179</span></td><td><span class="editable" id="label_S179">Táhlo pro dormu STROJON</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S179"><td colspan="2"><div class="detail-box"><img src="foto/S179.jpg" alt="S179" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S179</div><div class="popis" id="popis_S179">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S180')" data-k="s180" data-n="tenzometry cidla omega"><td><span class="editable" id="klabel_S180">S180</span></td><td><span class="editable" id="label_S180">Tenzometry - čidla omega</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S180"><td colspan="2"><div class="detail-box"><img src="foto/S180.jpg" alt="S180" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S180</div><div class="popis" id="popis_S180">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S265')" data-k="s265" data-n="tlacitko achille"><td><span class="editable" id="klabel_S265">S265</span></td><td><span class="editable" id="label_S265">Tlačítko Achille</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S265"><td colspan="2"><div class="detail-box"><img src="foto/S265.jpg" alt="S265" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S265</div><div class="popis" id="popis_S265">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S181')" data-k="s181" data-n="tlacitko do tabla modre ba 590 a4n13869"><td><span class="editable" id="klabel_S181">S181</span></td><td><span class="editable" id="label_S181">Tlačítko do tabla modré (BA 590) A4N13869</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S181"><td colspan="2"><div class="detail-box"><img src="foto/S181.jpg" alt="S181" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S181</div><div class="popis" id="popis_S181">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S182')" data-k="s182" data-n="tlacitko do tabla zelene ba 590"><td><span class="editable" id="klabel_S182">S182</span></td><td><span class="editable" id="label_S182">Tlačítko do tabla zelené (BA 590)</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S182"><td colspan="2"><div class="detail-box"><img src="foto/S182.jpg" alt="S182" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S182</div><div class="popis" id="popis_S182">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S370')" data-k="s370" data-n="tlacitko mt 42 2m xi"><td><span class="editable" id="klabel_S370">S370</span></td><td><span class="editable" id="label_S370">Tlačítko MT 42 2M XI</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S370"><td colspan="2"><div class="detail-box"><img src="foto/S370.jpg" alt="S370" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S370</div><div class="popis" id="popis_S370">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S183')" data-k="s183" data-n="tlacitko tl-eb42ix ovalne"><td><span class="editable" id="klabel_S183">S183</span></td><td><span class="editable" id="label_S183">Tlačítko TL-EB42IX - oválné</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S183"><td colspan="2"><div class="detail-box"><img src="foto/S183.jpg" alt="S183" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S183</div><div class="popis" id="popis_S183">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S184')" data-k="s184" data-n="tlacitko tl-kulate kovove modre"><td><span class="editable" id="klabel_S184">S184</span></td><td><span class="editable" id="label_S184">Tlačítko TL-Kulaté kovové modré</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S184"><td colspan="2"><div class="detail-box"><img src="foto/S184.jpg" alt="S184" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S184</div><div class="popis" id="popis_S184">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S185')" data-k="s185" data-n="tlacitko tl-kulate kovove zelene"><td><span class="editable" id="klabel_S185">S185</span></td><td><span class="editable" id="label_S185">Tlačítko TL-Kulaté kovové zelené</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S185"><td colspan="2"><div class="detail-box"><img src="foto/S185.jpg" alt="S185" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S185</div><div class="popis" id="popis_S185">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S367')" data-k="s367" data-n="tlacitko tl-mt42ix ctvercove"><td><span class="editable" id="klabel_S367">S367</span></td><td><span class="editable" id="label_S367">Tlačítko TL-MT42IX - čtvercové</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S367"><td colspan="2"><div class="detail-box"><img src="foto/S367.jpg" alt="S367" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S367</div><div class="popis" id="popis_S367">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S186')" data-k="s186" data-n="tlacitko tl-rt42ix kulate"><td><span class="editable" id="klabel_S186">S186</span></td><td><span class="editable" id="label_S186">Tlačítko TL-RT42IX - kulaté</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S186"><td colspan="2"><div class="detail-box"><img src="foto/S186.jpg" alt="S186" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S186</div><div class="popis" id="popis_S186">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S187')" data-k="s187" data-n="tlacitko tl-vega otevri dvere"><td><span class="editable" id="klabel_S187">S187</span></td><td><span class="editable" id="label_S187">Tlačítko TL-VEGA otevři dveře</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S187"><td colspan="2"><div class="detail-box"><img src="foto/S187.jpg" alt="S187" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S187</div><div class="popis" id="popis_S187">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S188')" data-k="s188" data-n="topne teleso do oleje gmv"><td><span class="editable" id="klabel_S188">S188</span></td><td><span class="editable" id="label_S188">Topné těleso do oleje GMV</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S188"><td colspan="2"><div class="detail-box"><img src="foto/S188.jpg" alt="S188" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S188</div><div class="popis" id="popis_S188">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S190')" data-k="s190" data-n="varistor 250v"><td><span class="editable" id="klabel_S190">S190</span></td><td><span class="editable" id="label_S190">Varistor 250V</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S190"><td colspan="2"><div class="detail-box"><img src="foto/S190.jpg" alt="S190" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S190</div><div class="popis" id="popis_S190">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S192')" data-k="s192" data-n="visaci zamek"><td><span class="editable" id="klabel_S192">S192</span></td><td><span class="editable" id="label_S192">Visací zámek</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S192"><td colspan="2"><div class="detail-box"><img src="foto/S192.jpg" alt="S192" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S192</div><div class="popis" id="popis_S192">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S244')" data-k="s244" data-n="vnitrni packa kdu 4"><td><span class="editable" id="klabel_S244">S244</span></td><td><span class="editable" id="label_S244">Vnitřní páčka KDU 4</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S244"><td colspan="2"><div class="detail-box"><img src="foto/S244.jpg" alt="S244" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S244</div><div class="popis" id="popis_S244">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S194')" data-k="s194" data-n="vodici lanko dveri strojon"><td><span class="editable" id="klabel_S194">S194</span></td><td><span class="editable" id="label_S194">Vodící lanko dveří STROJON</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S194"><td colspan="2"><div class="detail-box"><img src="foto/S194.jpg" alt="S194" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S194</div><div class="popis" id="popis_S194">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S373')" data-k="s373" data-n="vodic dveri model aries kovovy drzak s plastovym vodicem"><td><span class="editable" id="klabel_S373">S373</span></td><td><span class="editable" id="label_S373">Vodič dveří model Aries - kovový držák s plastovým vodičem</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S373"><td colspan="2"><div class="detail-box"><img src="foto/S373.jpg" alt="S373" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S373</div><div class="popis" id="popis_S373">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S195')" data-k="s195" data-n="voditko do prahu sematic zbuc"><td><span class="editable" id="klabel_S195">S195</span></td><td><span class="editable" id="label_S195">Vodítko do prahu sematic (Zbůch)</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S195"><td colspan="2"><div class="detail-box"><img src="foto/S195.jpg" alt="S195" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S195</div><div class="popis" id="popis_S195">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S196')" data-k="s196" data-n="voice station 2n pod a na kabinu"><td><span class="editable" id="klabel_S196">S196</span></td><td><span class="editable" id="label_S196">Voice station 2N - pod a na kabinu</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S196"><td colspan="2"><div class="detail-box"><img src="foto/S196.jpg" alt="S196" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S196</div><div class="popis" id="popis_S196">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S197')" data-k="s197" data-n="vta-led vystpni/za24"><td><span class="editable" id="klabel_S197">S197</span></td><td><span class="editable" id="label_S197">VTA-LED VÝSTPNÍ/ZA24</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S197"><td colspan="2"><div class="detail-box"><img src="foto/S197.jpg" alt="S197" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S197</div><div class="popis" id="popis_S197">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S246')" data-k="s246" data-n="vtl 01 dobrovolny"><td><span class="editable" id="klabel_S246">S246</span></td><td><span class="editable" id="label_S246">VTL 01 Dobrovolný</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S246"><td colspan="2"><div class="detail-box"><img src="foto/S246.jpg" alt="S246" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S246</div><div class="popis" id="popis_S246">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S198')" data-k="s198" data-n="weco 09g1-dc24a"><td><span class="editable" id="klabel_S198">S198</span></td><td><span class="editable" id="label_S198">WECO 09G1-DC24A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S198"><td colspan="2"><div class="detail-box"><img src="foto/S198.jpg" alt="S198" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S198</div><div class="popis" id="popis_S198">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S199')" data-k="s199" data-n="zamek vyndat klic obe polohy"><td><span class="editable" id="klabel_S199">S199</span></td><td><span class="editable" id="label_S199">Zámek - vyndat klíč obě polohy</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S199"><td colspan="2"><div class="detail-box"><img src="foto/S199.jpg" alt="S199" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S199</div><div class="popis" id="popis_S199">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S200')" data-k="s200" data-n="zamek vyndat klic pouze v jedne poloze"><td><span class="editable" id="klabel_S200">S200</span></td><td><span class="editable" id="label_S200">Zámek - vyndat klíč pouze v jedné poloze</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S200"><td colspan="2"><div class="detail-box"><img src="foto/S200.jpg" alt="S200" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S200</div><div class="popis" id="popis_S200">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S201')" data-k="s201" data-n="zamek dveri strojon eu-dl811/2 clr"><td><span class="editable" id="klabel_S201">S201</span></td><td><span class="editable" id="label_S201">Zámek dveří STROJON EU-DL811/2 CLR</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S201"><td colspan="2"><div class="detail-box"><img src="foto/S201.jpg" alt="S201" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S201</div><div class="popis" id="popis_S201">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S202')" data-k="s202" data-n="zamek strojon kronenberg"><td><span class="editable" id="klabel_S202">S202</span></td><td><span class="editable" id="label_S202">Zámek STROJON KRONENBERG</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S202"><td colspan="2"><div class="detail-box"><img src="foto/S202.jpg" alt="S202" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S202</div><div class="popis" id="popis_S202">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S203')" data-k="s203" data-n="zdroj 72w 24v 5a"><td><span class="editable" id="klabel_S203">S203</span></td><td><span class="editable" id="label_S203">Zdroj 72W 24V 5A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S203"><td colspan="2"><div class="detail-box"><img src="foto/S203.jpg" alt="S203" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S203</div><div class="popis" id="popis_S203">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S204')" data-k="s204" data-n="zdroj e217"><td><span class="editable" id="klabel_S204">S204</span></td><td><span class="editable" id="label_S204">Zdroj E217</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S204"><td colspan="2"><div class="detail-box"><img src="foto/S204.jpg" alt="S204" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S204</div><div class="popis" id="popis_S204">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('V360')" data-k="v360" data-n="zdroj e233"><td><span class="editable" id="klabel_V360">V360</span></td><td><span class="editable" id="label_V360">Zdroj E233</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_V360"><td colspan="2"><div class="detail-box"><img src="foto/V360.jpg" alt="V360" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">V360</div><div class="popis" id="popis_V360">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S205')" data-k="s205" data-n="zdroj e283"><td><span class="editable" id="klabel_S205">S205</span></td><td><span class="editable" id="label_S205">Zdroj E283</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S205"><td colspan="2"><div class="detail-box"><img src="foto/S205.jpg" alt="S205" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S205</div><div class="popis" id="popis_S205">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S206')" data-k="s206" data-n="zdroj e289"><td><span class="editable" id="klabel_S206">S206</span></td><td><span class="editable" id="label_S206">Zdroj E289</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S206"><td colspan="2"><div class="detail-box"><img src="foto/S206.jpg" alt="S206" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S206</div><div class="popis" id="popis_S206">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S223')" data-k="s223" data-n="zdroj e291"><td><span class="editable" id="klabel_S223">S223</span></td><td><span class="editable" id="label_S223">Zdroj E291</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S223"><td colspan="2"><div class="detail-box"><img src="foto/S223.jpg" alt="S223" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S223</div><div class="popis" id="popis_S223">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S224')" data-k="s224" data-n="zdroj e292"><td><span class="editable" id="klabel_S224">S224</span></td><td><span class="editable" id="label_S224">Zdroj E292</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S224"><td colspan="2"><div class="detail-box"><img src="foto/S224.jpg" alt="S224" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S224</div><div class="popis" id="popis_S224">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S207')" data-k="s207" data-n="zdroj e293"><td><span class="editable" id="klabel_S207">S207</span></td><td><span class="editable" id="label_S207">Zdroj E293</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S207"><td colspan="2"><div class="detail-box"><img src="foto/S207.jpg" alt="S207" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S207</div><div class="popis" id="popis_S207">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S208')" data-k="s208" data-n="zdroj e296"><td><span class="editable" id="klabel_S208">S208</span></td><td><span class="editable" id="label_S208">Zdroj E296</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S208"><td colspan="2"><div class="detail-box"><img src="foto/S208.jpg" alt="S208" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S208</div><div class="popis" id="popis_S208">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S209')" data-k="s209" data-n="zdroj e350"><td><span class="editable" id="klabel_S209">S209</span></td><td><span class="editable" id="label_S209">Zdroj E350</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S209"><td colspan="2"><div class="detail-box"><img src="foto/S209.jpg" alt="S209" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S209</div><div class="popis" id="popis_S209">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S210')" data-k="s210" data-n="zdroj e352a"><td><span class="editable" id="klabel_S210">S210</span></td><td><span class="editable" id="label_S210">Zdroj E352A</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S210"><td colspan="2"><div class="detail-box"><img src="foto/S210.jpg" alt="S210" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S210</div><div class="popis" id="popis_S210">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S211')" data-k="s211" data-n="zdroj e353"><td><span class="editable" id="klabel_S211">S211</span></td><td><span class="editable" id="label_S211">Zdroj E353</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S211"><td colspan="2"><div class="detail-box"><img src="foto/S211.jpg" alt="S211" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S211</div><div class="popis" id="popis_S211">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S212')" data-k="s212" data-n="zdroj g586/24v"><td><span class="editable" id="klabel_S212">S212</span></td><td><span class="editable" id="label_S212">Zdroj G586/24V</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S212"><td colspan="2"><div class="detail-box"><img src="foto/S212.jpg" alt="S212" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S212</div><div class="popis" id="popis_S212">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S213')" data-k="s213" data-n="zdroj weco 220v/03.65.pws.zdz.230"><td><span class="editable" id="klabel_S213">S213</span></td><td><span class="editable" id="label_S213">Zdroj WECO 220V/03.65.PWS.ZDZ.230</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S213"><td colspan="2"><div class="detail-box"><img src="foto/S213.jpg" alt="S213" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S213</div><div class="popis" id="popis_S213">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S259')" data-k="s259" data-n="zdroj zalozni ups 1200va drzak"><td><span class="editable" id="klabel_S259">S259</span></td><td><span class="editable" id="label_S259">Zdroj záložní UPS 1200VA+držák</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S259"><td colspan="2"><div class="detail-box"><img src="foto/S259.jpg" alt="S259" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S259</div><div class="popis" id="popis_S259">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S214')" data-k="s214" data-n="zdroj zalozni ups 900va drzak"><td><span class="editable" id="klabel_S214">S214</span></td><td><span class="editable" id="label_S214">Zdroj záložní UPS 900VA+držák</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S214"><td colspan="2"><div class="detail-box"><img src="foto/S214.jpg" alt="S214" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S214</div><div class="popis" id="popis_S214">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S215')" data-k="s215" data-n="zdrojova jednotka e221"><td><span class="editable" id="klabel_S215">S215</span></td><td><span class="editable" id="label_S215">Zdrojová jednotka E221</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S215"><td colspan="2"><div class="detail-box"><img src="foto/S215.jpg" alt="S215" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S215</div><div class="popis" id="popis_S215">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S216')" data-k="s216" data-n="zdrojova jednotka e233"><td><span class="editable" id="klabel_S216">S216</span></td><td><span class="editable" id="label_S216">Zdrojová jednotka E233</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S216"><td colspan="2"><div class="detail-box"><img src="foto/S216.jpg" alt="S216" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S216</div><div class="popis" id="popis_S216">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S217')" data-k="s217" data-n="zdrojova jednotka e349"><td><span class="editable" id="klabel_S217">S217</span></td><td><span class="editable" id="label_S217">Zdrojová jednotka E349</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S217"><td colspan="2"><div class="detail-box"><img src="foto/S217.jpg" alt="S217" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S217</div><div class="popis" id="popis_S217">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S218')" data-k="s218" data-n="zdrojova jednotka e349 b"><td><span class="editable" id="klabel_S218">S218</span></td><td><span class="editable" id="label_S218">Zdrojová jednotka E349 B</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S218"><td colspan="2"><div class="detail-box"><img src="foto/S218.jpg" alt="S218" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S218</div><div class="popis" id="popis_S218">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('S219')" data-k="s219" data-n="zpozدený rozbeh"><td><span class="editable" id="klabel_S219">S219</span></td><td><span class="editable" id="label_S219">Zpožděný rozběh</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_S219"><td colspan="2"><div class="detail-box"><img src="foto/S219.jpg" alt="S219" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">S219</div><div class="popis" id="popis_S219">—</div></div></div></td></tr>
+
+<tr class="data-row" onclick="toggleDetail('V363')" data-k="v363" data-n="zarovka led60"><td><span class="editable" id="klabel_V363">V363</span></td><td><span class="editable" id="label_V363">Žárovka LED60</span> <span class="arrow">▼</span></td></tr>
+<tr class="detail-row hidden" id="detail_V363"><td colspan="2"><div class="detail-box"><img src="foto/V363.jpg" alt="V363" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="no-photo" style="display:none">Bez fotky</div><div class="detail-text"><div class="karta-label">V363</div><div class="popis" id="popis_V363">—</div></div></div></td></tr>
+
+  </tbody>
 </table>
 </div>
 
 <script>
-var data = [
-{k:'S245',n:'15x čip+čtečka',m:1,mj:'ks'},{k:'S1',n:'A23',m:1,mj:'ks'},{k:'S2',n:'ALPHA BUS sada vidlička, domeček 20031-A',m:0,mj:'ks'},{k:'S3',n:'ALPHA BUS samostatný plastový váleček na čep',m:4,mj:'ks'},{k:'S4 - B',n:'ALPHA BUS trojúhelník komplet sada B',m:0,mj:'ks'},{k:'S4',n:'ALPHA BUS trojúhelník komplet sada BB',m:3,mj:'ks'},{k:'S4 - BH',n:'ALPHA BUS trojúhelník komplet sada BH',m:0,mj:'ks'},{k:'S5',n:'Autol 2000 sprej',m:0,mj:'ks'},{k:'S6',n:'AXSP3PO2012N 230V AC/13,8',m:0,mj:'ks'},{k:'S7',n:'Baterie (akumulátor) 12V 1,3 AH (baterie NZ)',m:0,mj:'ks'},{k:'S8',n:'Baterie (akumulátor) 12V 2,3 AH',m:24,mj:'ks'},{k:'S9',n:'Baterie (akumulátor) 12V 7,5 Ah (baterie UPS)',m:20,mj:'ks'},{k:'S264',n:'Baterie AKU NP12-7,5AH',m:20,mj:'ks'},{k:'S252',n:'Beta nastavení',m:0,mj:'ks'},{k:'S13',n:'Bezpečnostní modul BOS-M',m:0,mj:'ks'},{k:'S14',n:'Brano speciál - pro Františka Křižíka 18, Praha',m:2,mj:'ks'},{k:'S15',n:'Cívka 48/12 VDC',m:0,mj:'ks'},{k:'S16',n:'Cívka pro OR MONTANARI 12V DC 11W',m:0,mj:'ks'},{k:'S17',n:'Cívka pro ventil GMV',m:3,mj:'ks'},{k:'S18',n:'CRM 91H',m:2,mj:'ks'},{k:'S19',n:'Časový modul RV-MSS',m:55,mj:'ks'},{k:'S20',n:'Čep kluzáku',m:6,mj:'ks'},{k:'S21',n:'Čtečka Dallas',m:1,mj:'ks'},{k:'S22',n:'Čtečka DS03',m:0,mj:'ks'},{k:'S23',n:'Dallas čipy',m:3,mj:'ks'},{k:'S24',n:'Displej DISP RVD01',m:3,mj:'ks'},{k:'S25',n:'Displej DISP TFT 530 REV 2 - VEGA',m:4,mj:'ks'},{k:'S26',n:'Displej LCD Dobrovolný - modrý',m:1,mj:'ks'},{k:'S49',n:'Displej šipka - invalidní (Dobrovolný)',m:3,mj:'ks'},{k:'S27',n:'Domeček pro vidličku vysoký FERMATOR - komplet spínač + vidlička',m:2,mj:'ks'},{k:'S29',n:'Dovírač DICTATOR VAR 100034-0 malé kolečko',m:8,mj:'ks'},{k:'S30',n:'Dovírač DICTATOR VAR 101001/100034 velké kolečko vroubky',m:13,mj:'ks'},{k:'S32',n:'Dovírač DictatorG/50N/ velké',m:28,mj:'ks'},{k:'S31',n:'Dovírač DictatorG/50N/24',m:10,mj:'ks'},{k:'S28',n:'Dovírač samostatný - Dorma STROJON',m:2,mj:'ks'},{k:'S34',n:'Dveřní kontakt DCA-F2',m:0,mj:'ks'},{k:'S35',n:'Dveřní kontakt EDC-61',m:0,mj:'ks'},{k:'S249',n:'Dveřní uzávěra METRON',m:1,mj:'ks'},{k:'S36',n:'DYNATECH - D-BOX',m:1,mj:'ks'},{k:'S37',n:'ENCODER LIKA H-10242CU442L11',m:0,mj:'ks'},{k:'S38',n:'ENCODER SASSI LEO 158-H10242CU48RL',m:0,mj:'ks'},{k:'S39',n:'FERMATOR 000419',m:2,mj:'ks'},{k:'S40',n:'FERMATOR červený - automaty',m:4,mj:'ks'},{k:'S41',n:'FERMATOR VVVF3',m:1,mj:'ks'},{k:'S42',n:'FERMATOR VVVF4',m:1,mj:'ks'},{k:'S43',n:'Fermátor-sestava uzávěry 4PC - 210/10/40',m:2,mj:'ks'},{k:'S44',n:'Fotobuňka FERMATOR CFT.FCCRC 0035/14',m:0,mj:'ks'},{k:'S45',n:'Fotobuňka STROJON',m:3,mj:'ks'},{k:'S248',n:'Fotobuňka TELCO (Infrasensor)',m:2,mj:'ks'},{k:'S256',n:'Fotolišta MEMCO',m:0,mj:'ks'},{k:'S255',n:'Fotolišta VEGA (sada)',m:0,mj:'ks'},{k:'S254',n:'Fotolišta WECO (sada)',m:0,mj:'ks'},{k:'S46',n:'FRONTIER 368/24V',m:0,mj:'ks'},{k:'S47',n:'GSM brána 2N',m:1,mj:'ks'},{k:'S48',n:'Gumový doraz',m:0,mj:'ks'},{k:'S227',n:'Halogen 12V 205 lumen',m:0,mj:'ks'},{k:'S50',n:'Jednotka do rozvaděče OR-A3',m:0,mj:'ks'},{k:'S51',n:'Jednotka relé RV-BJR2',m:0,mj:'ks'},{k:'S52',n:'Jistič C25/3 25 A C 3póy',m:0,mj:'ks'},{k:'S53',n:'Kabel CYKY 5x2,5',m:0,mj:'bm'},{k:'S54',n:'karta E 261',m:0,mj:'ks'},{k:'S258',n:'Kladka BG30 M',m:0,mj:'ks'},{k:'S55',n:'Kladka centrická černá hluboká drážka zaoblená',m:12,mj:'ks'},{k:'S56',n:'Kladka centrická grafitová zaoblená 48x14, 10x9,8',m:3,mj:'ks'},{k:'S57',n:'Kladka centrická hnědá zaoblená 48x14, 10x9,8',m:10,mj:'ks'},{k:'S58',n:'Kladka centrická rovná drážka 56x17, 6x11,3',m:5,mj:'ks'},{k:'S59',n:'Kladka excentrická černá, malá 33x14x11 Hnědá',m:14,mj:'ks'},{k:'S60',n:'Kladka excentrická grafitová',m:9,mj:'ks'},{k:'S61',n:'Kladka excentrická rovná drážka 44x17, 3x10,3',m:0,mj:'ks'},{k:'S62',n:'Kladka excentrická rovná drážka 54x17, 6x13,7',m:0,mj:'ks'},{k:'S63',n:'Kladka na vodící lanko hnědá',m:27,mj:'ks'},{k:'S64',n:'Klapačka/vahadlo FERMATOR 210/10/40/ST',m:2,mj:'ks'},{k:'S65',n:'Klapačka/vahadlo zajištění dvěří STROJON  1-8121',m:2,mj:'ks'},{k:'S33',n:'Kluzák 2017 T3 slim',m:12,mj:'ks'},{k:'S66',n:'Kluzák bílý 2017',m:89,mj:'ks'},{k:'S68',n:'Kluzák bílý od 2018',m:18,mj:'ks'},{k:'S261',n:'Kluzák Dorma - nový typ',m:23,mj:'ks'},{k:'S69',n:'Kluzák Dorma - starý typ',m:26,mj:'ks'},{k:'S67',n:'Kluzák šedý do 2018',m:43,mj:'ks'},{k:'S70',n:'Kniha výtahu',m:0,mj:'ks'},{k:'S366',n:'Kolínko odvodu oleje',m:5,mj:'ks'},{k:'S71',n:'Komunikátor',m:0,mj:'ks'},{k:'S72',n:'Komunikátor do kabiny 2N',m:0,mj:'ks'},{k:'S372',n:'Kontakt pomocný PK 22E',m:2,mj:'ks'},{k:'S73',n:'Křivka WYKOV OK1',m:0,mj:'ks'},{k:'S74',n:'Křivka WYKOV OM48/10',m:3,mj:'ks'},{k:'S75',n:'LA 1 KN 11',m:1,mj:'ks'},{k:'S76',n:'LA4KC1B',m:1,mj:'ks'},{k:'S77',n:'LADN11',m:2,mj:'ks'},{k:'S78',n:'LADN40',m:2,mj:'ks'},{k:'S222',n:'LC1D09F7',m:0,mj:'ks'},{k:'S243',n:'LED nouze 200lm',m:2,mj:'ks'},{k:'S79',n:'Lišta pro táhlo STROJON - DORMA',m:3,mj:'ks'},{k:'S80',n:'LP1K0901BD',m:4,mj:'ks'},{k:'S81',n:'LPK0901ED3',m:1,mj:'ks'},{k:'S82',n:'Magnet pro křivku WYKOV velký hrnce',m:0,mj:'ks'},{k:'S83',n:'Maticová poloh.VTA-BEPOL',m:1,mj:'ks'},{k:'S88',n:'Měnič frekvenční UNIDRIVE 32/35A',m:1,mj:'ks'},{k:'S89',n:'Měnič frekvenční UNIDRIVE 9,5/11A',m:0,mj:'ks'},{k:'S90',n:'Měnič frekvenční YASKAWA CIMR-U7CC45P5',m:1,mj:'ks'},{k:'S91',n:'METRON - automaty DO.010034',m:1,mj:'ks'},{k:'S92',n:'MOLIK 09G1-DC24A',m:2,mj:'ks'},{k:'S94',n:'Motor dveří STROJON G162YG394',m:2,mj:'ks'},{k:'S368',n:'Motor VEGA KIT-KOTPM5182026-SH16',m:1,mj:'ks'},{k:'S151',n:'MS1 wykov - snímač',m:4,mj:'ks'},{k:'S95',n:'Nabíječka baterií',m:0,mj:'ks'},{k:'S96',n:'Napájení lišty PRIVAMED - napájení lišty na LDN',m:0,mj:'ks'},{k:'S97',n:'Napěťová karta BUS Metron M2',m:1,mj:'ks'},{k:'V262',n:'Napínací kladka COMAQ - provedení levé',m:0,mj:'ks'},{k:'V263',n:'Napínací kladka COMAQ - provedení pravé',m:0,mj:'ks'},{k:'S98',n:'Nouzové otevírání dveří METRON',m:0,mj:'ks'},{k:'S99',n:'Nouzové otevření dveří sada STROJON - N-640',m:1,mj:'ks'},{k:'S100',n:'Obraceče polarity',m:0,mj:'ks'},{k:'S101',n:'Odrušovací člen s LED',m:0,mj:'ks'},{k:'S107',n:'Olověný AKU NP12-2,3AH NPP(T1)',m:20,mj:'ks'},{k:'S108',n:'Omezovač rychlosti MONTANARI RQ300 0,51',m:0,mj:'ks'},{k:'S225',n:'OR-A3',m:0,mj:'ks'},{k:'S109',n:'Ovládací rameno BUS',m:2,mj:'ks'},{k:'S266',n:'Ovladač FAB 2P klíč G9225',m:2,mj:'ks'},{k:'S110',n:'Ozubený řemen HTD',m:26,mj:'bm'},{k:'S111',n:'Páčka STROJON - N-218',m:0,mj:'ks'},{k:'S112',n:'Páčky pro zámek ručních dveří',m:30,mj:'ks'},{k:'S113',n:'Panty dveří STROJON - náklaďáky',m:26,mj:'ks'},{k:'S114',n:'Patice 9404',m:0,mj:'ks'},{k:'S115',n:'Patice SCHRACK YPT78704',m:0,mj:'ks'},{k:'S116',n:'PEPPERLY FUCHS/BB10-P.F1/33/35/59/102/115-7',m:0,mj:'ks'},{k:'S231',n:'Pojistka 10 A',m:0,mj:'ks'},{k:'S234',n:'Pojistka 16 A',m:0,mj:'ks'},{k:'S235',n:'Pojistka 23 A',m:0,mj:'ks'},{k:'S228',n:'Pojistka 25 A',m:0,mj:'ks'},{k:'S230',n:'Pojistka 32 A',m:0,mj:'ks'},{k:'S237',n:'Pojistka 35 A',m:0,mj:'ks'},{k:'S229',n:'Pojistka 40 A',m:0,mj:'ks'},{k:'S232',n:'Pojistka 6 A',m:0,mj:'ks'},{k:'S233',n:'Pojistka 63 A',m:0,mj:'ks'},{k:'S236',n:'Pojistka 63 A',m:0,mj:'ks'},{k:'S117',n:'Pružina dveří Fermátor',m:0,mj:'ks'},{k:'S118',n:'Pružina STROJON Bohouš delší',m:0,mj:'ks'},{k:'S119',n:'Pružina STROJON Bohouš malá černá',m:0,mj:'ks'},{k:'S120',n:'Pružina STROJON dlouhá',m:2,mj:'ks'},{k:'S121',n:'Pružina STROJON krátká',m:2,mj:'ks'},{k:'S122',n:'Pružina STROJON standard',m:2,mj:'ks'},{k:'S123',n:'Přivolávač VTA FMRT',m:0,mj:'ks'},{k:'S124',n:'Přivolávač VTA-BEPOL/SM-50/DISP',m:0,mj:'ks'},{k:'S125',n:'Přivolávač VTA-EVYST/LED/ZA-24V',m:0,mj:'ks'},{k:'S126',n:'Přivolávač VTA-MEXP 16',m:0,mj:'ks'},{k:'S127',n:'Relé 5534',m:0,mj:'ks'},{k:'S128',n:'Relé pro stykač - L1KN20',m:4,mj:'ks'},{k:'S129',n:'Relé PT570730',m:0,mj:'ks'},{k:'S220',n:'Rozvaděč a příslušenství-Maříkova 2',m:1,mj:'ks'},{k:'S130',n:'RV-MSS (modul ke zdroji)',m:0,mj:'ks'},{k:'S131',n:'Řídící jednotka OMEGA',m:1,mj:'ks'},{k:'S132',n:'Řídící jednotka VEGA',m:0,mj:'ks'},{k:'S133',n:'Řídící jednotka WECO',m:0,mj:'ks'},{k:'S134',n:'Řídící karta BUS Metron M2',m:1,mj:'ks'},{k:'S135',n:'Řídící karta dveří FERMATOR C2TV4',m:3,mj:'ks'},{k:'S136',n:'Řídící karta dveří FERMATOR ECC',m:3,mj:'ks'},{k:'S137',n:'Řídící karta dveří FERMATOR ECC+',m:1,mj:'ks'},{k:'S138',n:'Řídící karta rozvaděče BETA VTA 971 nová',m:3,mj:'ks'},{k:'S139',n:'Řídící karta rozvaděče BETA VTA 971 starší',m:5,mj:'ks'},{k:'S140',n:'Řídící karta rozvaděče Dobrovolný',m:1,mj:'ks'},{k:'S141',n:'Řídící karta rozvaděče E148',m:0,mj:'ks'},{k:'S142',n:'Řídící karta rozvaděče E248',m:9,mj:'ks'},{k:'S143',n:'Řídící karta rozvaděče E348',m:1,mj:'ks'},{k:'S144',n:'Řídící karta rozvaděče RVM ALFA',m:1,mj:'ks'},{k:'S145',n:'Řídící karta rozvaděče RVM E',m:2,mj:'ks'},{k:'S146',n:'Řídící karta rozvaděče TELSYS MKU',m:2,mj:'ks'},{k:'S285',n:'Řídící karta VTA-DOOR/CAN',m:3,mj:'ks'},{k:'S147',n:'Řídící motorek Metron',m:0,mj:'ks'},{k:'S148',n:'Sada 4 ks vodičů BUS KLEFER G3',m:2,mj:'ks'},{k:'V364',n:'Sada filců do samomazu',m:132,mj:'ks'},{k:'S149',n:'Samozavírač Wykov',m:0,mj:'ks'},{k:'S260',n:'Silonová vložka vodiče dv.panelu 14,8mm - Selcom spodní vedení',m:8,mj:'ks'},{k:'S150',n:'Slučovač 2N',m:2,mj:'ks'},{k:'S369',n:'Snímač 2x MS10/60-1A NO',m:1,mj:'ks'},{k:'S297',n:'Snímač bistabilní',m:2,mj:'ks'},{k:'S152',n:'Snímač HS1',m:0,mj:'ks'},{k:'S153',n:'Snímač HST-1P',m:0,mj:'ks'},{k:'S154',n:'Snímač magnetický monostabilní (Vsetín)',m:9,mj:'ks'},{k:'S365',n:'Snímač magnetický monostabilní - 2 kontakty',m:1,mj:'ks'},{k:'S155',n:'Snímač polohy OR',m:1,mj:'ks'},{k:'S156',n:'Snímač SPECIAL',m:0,mj:'ks'},{k:'S157',n:'Spínací jednotka CTP',m:0,mj:'ks'},{k:'S158',n:'Spínací zdroj na DIN lištu 24VDC',m:0,mj:'ks'},{k:'S159',n:'Spínač pro OR MONTANARI CMSM01',m:0,mj:'ks'},{k:'S160',n:'Spodní vedení dveří FERMATOR béžový A6H01P000000',m:7,mj:'ks'},{k:'S161',n:'Spodní vedení dveří FERMATOR sada A6H15B000000',m:0,mj:'ks'},{k:'S191',n:'Spodní vedení dveří STROJON',m:6,mj:'ks'},{k:'S162',n:'Spodní vedení křídel BUS METRON',m:2,mj:'ks'},{k:'S163',n:'Spoušť vypínací 110V',m:0,mj:'ks'},{k:'S221',n:'SR2A 201 BD - ZELIO',m:0,mj:'ks'},{k:'S164',n:'STROJON Bohouš - celý L - zámek kabinových dveří',m:0,mj:'ks'},{k:'S165',n:'STROJON Bohouš - celý P - zámek kabinových dveří',m:1,mj:'ks'},{k:'S166',n:'STROJON VEGA OPR 800-L-MW',m:3,mj:'ks'},{k:'S167',n:'STROJON VTA-DOOR-CAN 2PT1 bez fotobuňky SWV.4.09',m:1,mj:'ks'},{k:'S168',n:'STROJON VTA-DOOR/CAN 203894',m:2,mj:'ks'},{k:'S169',n:'Stykač 25A',m:0,mj:'ks'},{k:'S371',n:'Stykač C32.11 48V/50Hz',m:4,mj:'ks'},{k:'S170',n:'Stykač K 9A',m:0,mj:'ks'},{k:'S171',n:'Stykač K 9A 48VDC',m:2,mj:'ks'},{k:'S173',n:'Stykač LC1D25 P7',m:5,mj:'ks'},{k:'S174',n:'Stykač LC1D38 P7',m:1,mj:'ks'},{k:'S172',n:'Stykač LC1D50 P7',m:2,mj:'ks'},{k:'S176',n:'Svorkovnice lámací',m:0,mj:'ks'},{k:'S177',n:'SW 291 V 03.02.29 - Národní Divadlo výtahy V1,V2,V3 - displej',m:2,mj:'ks'},{k:'S178',n:'Switch glas - pro snímače',m:0,mj:'ks'},{k:'S179',n:'Táhlo pro dormu STROJON',m:0,mj:'ks'},{k:'S180',n:'Tenzometry - čidla omega',m:2,mj:'ks'},{k:'S265',n:'Tlačítko Achille',m:8,mj:'ks'},{k:'S181',n:'Tlačítko do tabla modré (BA 590) A4N13869',m:0,mj:'ks'},{k:'S182',n:'Tlačítko do tabla zelené (BA 590)',m:0,mj:'ks'},{k:'S370',n:'Tlačítko MT 42 2M XI',m:1,mj:'ks'},{k:'S183',n:'Tlačítko TL-EB42IX - oválné',m:5,mj:'ks'},{k:'S184',n:'Tlačítko TL-Kulaté kovové modré',m:0,mj:'ks'},{k:'S185',n:'Tlačítko TL-Kulaté kovové zelené',m:0,mj:'ks'},{k:'S367',n:'Tlačítko TL-MT42IX - čtvercové',m:5,mj:'ks'},{k:'S186',n:'Tlačítko TL-RT42IX  - kulaté',m:5,mj:'ks'},{k:'S187',n:'Tlačítko TL-VEGA otevři dveře',m:0,mj:'ks'},{k:'S188',n:'Topné těleso do oleje GMV',m:3,mj:'ks'},{k:'S190',n:'Varistor 250V',m:0,mj:'ks'},{k:'S192',n:'Visací zámek',m:11,mj:'ks'},{k:'S244',n:'Vnitřní páčka KDU 4',m:14,mj:'ks'},{k:'S194',n:'Vodící lanko dveří STROJON',m:1,mj:'ks'},{k:'S373',n:'Vodič dveří model Aries - kovový držák s plastovým vodičem',m:8,mj:'ks'},{k:'S195',n:'Vodítko do prahu sematic (Zbůch)',m:42,mj:'ks'},{k:'S196',n:'Voice station 2N - pod a na kabinu',m:1,mj:'ks'},{k:'S197',n:'VTA-LED VÝSTPNÍ/ZA24',m:0,mj:'ks'},{k:'S246',n:'VTL 01 Dobrovolný',m:7,mj:'ks'},{k:'S198',n:'WECO 09G1-DC24A',m:0,mj:'ks'},{k:'S199',n:'Zámek - vyndat klíč obě polohy',m:7,mj:'ks'},{k:'S200',n:'Zámek - vyndat klíč pouze v jedné poloze',m:11,mj:'ks'},{k:'S201',n:'Zámek dveří STROJON EU-DL811/2 CLR',m:0,mj:'ks'},{k:'S202',n:'Zámek STROJON KRONENBERG',m:9,mj:'ks'},{k:'S203',n:'Zdroj 72W 24V 5A',m:0,mj:'ks'},{k:'S204',n:'Zdroj E217',m:1,mj:'ks'},{k:'V360',n:'Zdroj E233',m:0,mj:'ks'},{k:'S205',n:'Zdroj E283',m:0,mj:'ks'},{k:'S206',n:'Zdroj E289',m:1,mj:'ks'},{k:'S223',n:'Zdroj E291',m:0,mj:'ks'},{k:'S224',n:'Zdroj E292',m:0,mj:'ks'},{k:'S207',n:'Zdroj E293',m:2,mj:'ks'},{k:'S208',n:'Zdroj E296',m:2,mj:'ks'},{k:'S209',n:'Zdroj E350',m:3,mj:'ks'},{k:'S210',n:'Zdroj E352A',m:8,mj:'ks'},{k:'S211',n:'Zdroj E353',m:1,mj:'ks'},{k:'S212',n:'Zdroj G586/24V',m:0,mj:'ks'},{k:'S213',n:'Zdroj WECO 220V/03.65.PWS.ZDZ.230',m:5,mj:'ks'},{k:'S259',n:'Zdroj záložní UPS 1200VA+držák',m:6,mj:'ks'},{k:'S214',n:'Zdroj záložní UPS 900VA+držák',m:13,mj:'ks'},{k:'S215',n:'Zdrojová jednotka E221',m:2,mj:'ks'},{k:'S216',n:'Zdrojová jednotka E233',m:3,mj:'ks'},{k:'S217',n:'Zdrojová jednotka E349',m:3,mj:'ks'},{k:'S218',n:'Zdrojová jednotka E349 B',m:1,mj:'ks'},{k:'S219',n:'Zpožděný rozběh',m:6,mj:'ks'},{k:'V363',n:'Žárovka LED60',m:0,mj:'ks'}
-];
-
-var sortCol='n', sortDir=1, filterMode='all';
+var allRows = document.querySelectorAll('#tbody tr.data-row');
+var statsEl = document.getElementById('stats');
+statsEl.textContent = allRows.length + ' položek';
 
 function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 
-function hl(text, q){
-  if(!q) return text;
-  var nt=norm(text), nq=norm(q);
-  var i=nt.indexOf(nq);
-  if(i<0) return text;
-  return text.slice(0,i)+'<mark>'+text.slice(i,i+q.length)+'</mark>'+text.slice(i+q.length);
+function toggleDetail(id) {
+  var detail = document.getElementById('detail_' + id);
+  var dataRow = detail ? detail.previousElementSibling : null;
+  if (!detail) return;
+  if (detail.classList.contains('hidden')) {
+    detail.classList.remove('hidden');
+    if (dataRow) dataRow.classList.add('open');
+  } else {
+    detail.classList.add('hidden');
+    if (dataRow) dataRow.classList.remove('open');
+  }
 }
 
-function render(){
-  try {
-    var raw = document.getElementById('search').value.trim();
-    var q = norm(raw);
-    var rows = data.filter(function(r){
-      if(filterMode==='skladem' && r.m<=0) return false;
-      if(filterMode==='zero' && r.m>0) return false;
-      if(!q) return true;
-      return norm(r.n).indexOf(q)>=0 || norm(r.k).indexOf(q)>=0;
-    });
-    rows.sort(function(a,b){
-      var av = sortCol==='m' ? a.m : (sortCol==='k' ? a.k : a.n);
-      var bv = sortCol==='m' ? b.m : (sortCol==='k' ? b.k : b.n);
-      if(typeof av==='number') return (av-bv)*sortDir;
-      return String(av||'').localeCompare(String(bv||''),'cs')*sortDir;
-    });
-    document.getElementById('stats').textContent = rows.length + ' / ' + data.length + ' položek';
-    var html = '';
-    for(var i=0; i<rows.length; i++){
-      var r = rows[i];
-      html += '<tr>';
-      html += '<td>'+hl(r.k, raw)+'</td>';
-      html += '<td>'+hl(r.n||'—', raw)+'</td>';
-      html += '</tr>';
+document.getElementById('search').addEventListener('input', function(){
+  var q = norm(this.value.trim());
+  var count = 0;
+  for(var i=0; i<allRows.length; i++){
+    var r = allRows[i];
+    var onclick = r.getAttribute('onclick') || '';
+    var idMatch = onclick.match(/toggleDetail\('([^']+)'\)/);
+    var kid = idMatch ? idMatch[1] : null;
+    var detail = kid ? document.getElementById('detail_' + kid) : null;
+    if(!q || r.getAttribute('data-k').indexOf(q)>=0 || r.getAttribute('data-n').indexOf(q)>=0){
+      r.classList.remove('hidden');
+    } else {
+      r.classList.add('hidden');
+      r.classList.remove('open');
+      if (detail) detail.classList.add('hidden');
+      count--;
     }
-    document.getElementById('tbody').innerHTML = html;
-  } catch(e) {
-    document.getElementById('stats').textContent = 'Chyba zobrazení: ' + e.message;
+    count++;
   }
+  // recount visible
+  var visible = 0;
+  for(var i=0; i<allRows.length; i++){
+    if(!allRows[i].classList.contains('hidden')) visible++;
+  }
+  statsEl.textContent = (q ? visible + ' / ' : '') + allRows.length + ' položek';
+});
+
+// --- EDITACE ---
+function loadEdits() {
+  try {
+    var edits = JSON.parse(localStorage.getItem('sklad_edits') || '{}');
+    for (var id in edits) {
+      var el = document.getElementById('label_' + id);
+      if (el && edits[id].n) { el.textContent = edits[id].n; el.classList.add('edited'); }
+      var kel = document.getElementById('klabel_' + id);
+      if (kel && edits[id].k) { kel.textContent = edits[id].k; kel.classList.add('edited'); }
+    }
+  } catch(e) {}
 }
 
-document.addEventListener('DOMContentLoaded', function(){
-  document.getElementById('search').addEventListener('input', render);
-  var btns = document.querySelectorAll('.filter-btn');
-  for(var i=0; i<btns.length; i++){
-    btns[i].addEventListener('click', function(){
-      for(var j=0; j<btns.length; j++) btns[j].classList.remove('active');
-      this.classList.add('active');
-      filterMode = this.getAttribute('data-filter');
-      render();
-    });
+function saveEdit(id, field, value) {
+  try {
+    var edits = JSON.parse(localStorage.getItem('sklad_edits') || '{}');
+    if (!edits[id]) edits[id] = {};
+    edits[id][field] = value;
+    localStorage.setItem('sklad_edits', JSON.stringify(edits));
+  } catch(e) {}
+}
+
+function startEdit(el, id, field, e) {
+  e.stopPropagation();
+  var orig = el.textContent;
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.value = orig;
+  input.className = 'edit-input';
+  el.replaceWith(input);
+  input.focus();
+  input.select();
+
+  function finish() {
+    var val = input.value.trim() || orig;
+    var span = document.createElement('span');
+    span.id = el.id;
+    span.className = el.className + (val !== orig ? ' edited' : '');
+    span.textContent = val;
+    span.title = 'Dvojklik pro editaci';
+    span.ondblclick = function(ev) { startEdit(span, id, field, ev); };
+    input.replaceWith(span);
+    if (val !== orig) saveEdit(id, field, val);
   }
-  var ths = document.querySelectorAll('thead th[data-col]');
-  for(var i=0; i<ths.length; i++){
-    ths[i].addEventListener('click', function(){
-      var col = this.getAttribute('data-col');
-      if(sortCol===col) sortDir*=-1; else {sortCol=col; sortDir=1;}
-      render();
-    });
-  }
-  render();
+
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') { input.blur(); }
+    if (ev.key === 'Escape') { input.value = orig; input.blur(); }
+  });
+}
+
+// Attach dblclick to editable spans
+document.querySelectorAll('.editable').forEach(function(el) {
+  el.title = 'Dvojklik pro editaci';
+  el.ondblclick = function(e) {
+    var id = el.id.replace('label_','').replace('klabel_','');
+    var field = el.id.startsWith('klabel_') ? 'k' : 'n';
+    startEdit(el, id, field, e);
+  };
 });
+
+loadEdits();
 </script>
 </body>
 </html>
